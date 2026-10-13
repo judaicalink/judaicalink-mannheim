@@ -1,0 +1,47 @@
+/* The platform bar of mannheim.judaicalink.org (kit 1). Included into every page by nginx (SSI) together with
+   /kit/1/header.html. Everything is prefixed jl- and sets its own fonts and colours, so that it looks the same on
+   top of any showcase. Compatible changes only; a breaking change is kit 2. */
+.jl-bar {
+  --jl-bar-fg: #1d1d1f; --jl-bar-muted: #5b5b66; --jl-bar-line: #d8d8de; --jl-bar-bg: #ffffff; --jl-bar-accent: #1f4e8c;
+  --jl-bar-panel: #ffffff;
+  all: initial; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px;
+  min-height: 60px; padding: 8px 16px; background: var(--jl-bar-bg); border-bottom: 1px solid var(--jl-bar-line);
+  font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--jl-bar-fg);
+  position: relative; z-index: 1000;
+}
+@media (prefers-color-scheme: dark) {
+  .jl-bar { --jl-bar-fg: #e8e8ec; --jl-bar-muted: #a2a2ad; --jl-bar-line: #3a3a42; --jl-bar-bg: #16161a;
+            --jl-bar-accent: #8db4ec; --jl-bar-panel: #20242c; }
+  .jl-brand img { filter: invert(1) hue-rotate(180deg); }
+}
+.jl-bar *, .jl-bar *::before, .jl-bar *::after { box-sizing: border-box; }
+/* the page's own rules for a, summary, label, nav … must not change the bar */
+.jl-bar a, .jl-bar summary, .jl-bar label, .jl-bar nav, .jl-bar span, .jl-bar div {
+  font: inherit; letter-spacing: normal; text-transform: none; line-height: inherit; margin: 0; }
+.jl-bar a { color: var(--jl-bar-fg); text-decoration: none; }
+.jl-bar a:hover, .jl-bar summary:hover { color: var(--jl-bar-accent); }
+.jl-bar .jl-brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; margin-right: auto; }
+.jl-brand img { height: 40px; width: auto; display: block; }
+.jl-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; }
+.jl-nav > a, .jl-dropdown summary { padding: 6px 0; cursor: pointer; }
+.jl-bar .jl-production { color: var(--jl-bar-muted) !important; font-size: 13px; border-left: 1px solid var(--jl-bar-line);
+                 padding-left: 16px !important; }
+.jl-dropdown { position: relative; }
+.jl-dropdown summary { list-style: none; }
+.jl-dropdown summary::-webkit-details-marker { display: none; }
+.jl-dropdown summary::after { content: " ▾"; font-size: 11px; color: var(--jl-bar-muted); }
+.jl-dropdown-panel { position: absolute; top: 100%; left: -12px; min-width: 240px; padding: 6px 0;
+                     background: var(--jl-bar-panel); border: 1px solid var(--jl-bar-line); border-radius: 6px;
+                     box-shadow: 0 6px 20px rgba(0, 0, 0, .12); }
+.jl-dropdown-panel a { display: block; padding: 7px 14px; }
+.jl-dropdown-panel .jl-all { border-top: 1px solid var(--jl-bar-line); margin-top: 4px; color: var(--jl-bar-muted); }
+.jl-menu-toggle { position: absolute; opacity: 0; pointer-events: none; }
+.jl-menu-button { display: none; cursor: pointer; padding: 6px 10px; border: 1px solid var(--jl-bar-line);
+                  border-radius: 6px; font-size: 14px; }
+@media (max-width: 760px) {
+  .jl-menu-button { display: block; }
+  .jl-nav { display: none; flex-basis: 100%; flex-direction: column; align-items: flex-start; gap: 0; padding: 6px 0; }
+  .jl-menu-toggle:checked ~ .jl-nav { display: flex; }
+  .jl-dropdown-panel { position: static; border: 0; box-shadow: none; padding: 0 0 0 12px; background: none; }
+  .jl-bar .jl-production { border-left: 0; padding-left: 0 !important; }
+}

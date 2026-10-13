@@ -1,0 +1,45 @@
+# The central services of mannheim.judaicalink.org. Run in this directory: docker compose up -d
+# Settings in .env (see .env.example); the current database is FUSEKI_DB, set by load.sh.
+# Nothing here is published beyond 127.0.0.1: nginx on the host is the only public entry (../host/nginx/).
+name: judaicalink
+
+services:
+  # the public SPARQL endpoint, read-only (fuseki/config.ttl); nginx passes /sparql to /judaicalink/query
+  fuseki:
+    build: ./fuseki
+    image: judaicalink/fuseki:6.2.0
+    restart: unless-stopped
+    command: ["--conf", "/fuseki/config.ttl"]
+    environment:
+      JAVA_OPTS: "-Xmx${FUSEKI_HEAP:-8g}"
+    volumes:
+      - ./fuseki/config.ttl:/fuseki/config.ttl:ro
+      - type: bind                   # never create a missing database directory: fail instead
+        source: ${FUSEKI_DB:?set FUSEKI_DB in .env (load.sh does)}
+        target: /fuseki/database
+        bind: { create_host_path: false }
+    ports:
+      - "127.0.0.1:3030:3030"
+    networks: [judaicalink]
+
+  # builds a new database over HTTP (load.sh); never public, not on the shared network, stopped after loading
+  fuseki-load:
+    image: judaicalink/fuseki:6.2.0
+    profiles: [load]
+    command: ["--update", "--loc", "/fuseki/database", "/judaicalink"]
+    environment:
+      JAVA_OPTS: "-Xmx${FUSEKI_HEAP:-8g}"
+    volumes:
+      - type: bind
+        source: ${FUSEKI_LOAD_DB:-/nonexistent}
+        target: /fuseki/database
+        bind: { create_host_path: false }
+    ports:
+      - "127.0.0.1:3031:3030"
+
+  # Solr: added when a showcase needs a full-text index (same major version and schema conventions as Frankfurt)
+
+# showcases with a server join this network and reach the endpoint as http://fuseki:3030/judaicalink/query
+networks:
+  judaicalink:
+    name: judaicalink

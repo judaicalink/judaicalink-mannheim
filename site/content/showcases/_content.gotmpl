@@ -1,0 +1,10 @@
+{{/* One about page per showcase, /showcases/<path>/, made from site/data/showcases.toml (Hugo content adapter). */}}
+{{ range site.Data.showcases.showcase }}
+  {{ $.AddPage (dict
+    "path" .path
+    "title" .title
+    "kind" "page"
+    "params" (dict "showcase" .)
+    "content" (dict "mediaType" "text/markdown" "value" .description)
+  ) }}
+{{ end }}

@@ -1,0 +1,13 @@
+# The showcases of mannheim.judaicalink.org: the list on the start page and the nginx locations
+# (host/nginx/showcases.py). One entry per showcase; each has its own repository (see README.md).
+#
+#   path         the URL path, https://mannheim.judaicalink.org/<path>/ (stable: publications cite it)
+#   title, description
+#   port         only for a showcase with a server: its container listens on 127.0.0.1:<port> (8100-8999)
+#   repository   optional, where its source is
+#   publication  optional, the publication it accompanies (Markdown)
+
+[[showcase]]
+path = "dashboard"
+title = "Data profile"
+description = "Key figures of the knowledge graph and the Compact Memory full text: datasets, links, provenance, completeness."

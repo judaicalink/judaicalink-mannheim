@@ -1,0 +1,6 @@
+services/.env
+site/public/
+site/resources/
+site/.hugo_build.lock
+__pycache__/
+.DS_Store

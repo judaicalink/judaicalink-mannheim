@@ -1,0 +1,28 @@
+{{ define "head" }}
+<link rel="stylesheet" href="/kit/vendor/yasgui-4.6.2/yasgui.min.css">
+<style>.jl-main { max-width: 90rem; } #yasgui { margin-top: 12px; }</style>
+{{ end }}
+{{ define "main" }}
+<h1>SPARQL</h1>
+<p class="jl-meta">The Mannheim version of the knowledge graph (<a href="/about/data/">what is loaded</a>), one named graph
+  per dataset; without <code>GRAPH</code> a query sees all of them. Endpoint for programs:
+  <code>https://mannheim.judaicalink.org/sparql</code>. Queries stop after 120 seconds.</p>
+<div id="yasgui"></div>
+<script src="/kit/vendor/yasgui-4.6.2/yasgui.min.js"></script>
+<script>
+  Yasgui.Yasqe.defaults.value = `PREFIX jl: <http://data.judaicalink.org/ontology/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+# the datasets and their size
+SELECT ?graph (COUNT(*) AS ?triples)
+WHERE { GRAPH ?graph { ?s ?p ?o } }
+GROUP BY ?graph
+ORDER BY DESC(?triples)`;
+  new Yasgui(document.getElementById("yasgui"), {
+    requestConfig: { endpoint: location.origin + "/sparql", method: "POST" },
+    copyEndpointOnNewTab: true,
+    showEndpointButton: false,
+    persistenceId: "jl-mannheim"
+  });
+</script>
+{{ end }}

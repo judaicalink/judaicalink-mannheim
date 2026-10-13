@@ -1,0 +1,21 @@
+<link rel="stylesheet" href="/kit/1/header.css">
+<header class="jl-bar">
+  <a class="jl-brand" href="/"><img src="/kit/1/judaicalink.png" alt="" width="100" height="40"><span>Mannheim</span></a>
+  <input type="checkbox" id="jl-menu" class="jl-menu-toggle">
+  <label for="jl-menu" class="jl-menu-button" aria-label="Menu">Menu</label>
+  <nav class="jl-nav" aria-label="JudaicaLink Mannheim">
+    <details class="jl-dropdown">
+      <summary>Showcases</summary>
+      <div class="jl-dropdown-panel">
+        {{- range site.Data.showcases.showcase }}
+        <a href="/{{ .path }}/">{{ .title }}</a>
+        {{- end }}
+        <a href="/showcases/" class="jl-all">All showcases</a>
+      </div>
+    </details>
+    <a href="/sparql/">SPARQL</a>
+    <a href="/about/data/">Data</a>
+    <a href="{{ site.Params.web }}">Project</a>
+    <a class="jl-production" href="{{ site.Params.production }}">Production: FID Jewish Studies</a>
+  </nav>
+</header>

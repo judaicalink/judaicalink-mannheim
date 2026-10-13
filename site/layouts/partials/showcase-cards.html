@@ -1,0 +1,14 @@
+{{ with site.Data.showcases.showcase }}
+<ul class="jl-cards">
+  {{ range . }}
+  <li>
+    <h3><a href="/{{ .path }}/">{{ .title }}</a></h3>
+    <p>{{ .description }}</p>
+    {{ with .publication }}<p class="jl-meta">{{ . | markdownify }}</p>{{ end }}
+    <p class="jl-meta"><a href="/showcases/{{ .path }}/">About this showcase</a></p>
+  </li>
+  {{ end }}
+</ul>
+{{ else }}
+<p>None yet.</p>
+{{ end }}

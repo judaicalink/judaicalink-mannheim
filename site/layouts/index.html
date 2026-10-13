@@ -1,0 +1,11 @@
+{{ define "main" }}
+<h1>JudaicaLink Mannheim</h1>
+{{ .Content }}
+
+<h2>Showcases</h2>
+{{ partial "showcase-cards.html" . }}
+
+<h2>Data</h2>
+<p>The current Mannheim version of the knowledge graph: query it in the <a href="/sparql/">SPARQL editor</a>, or see
+  <a href="/about/data/">what is loaded and where the files are</a>.</p>
+{{ end }}

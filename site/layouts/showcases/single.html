@@ -1,0 +1,13 @@
+{{ define "main" }}
+{{ $s := .Params.showcase }}
+<p class="jl-meta"><a href="/showcases/">Showcases</a></p>
+<h1>{{ .Title }}</h1>
+<p class="jl-lead">{{ .Content }}</p>
+<dl class="jl-facts">
+  <dt>Address</dt><dd><a href="/{{ $s.path }}/">https://mannheim.judaicalink.org/{{ $s.path }}/</a></dd>
+  <dt>Kind</dt><dd>{{ if $s.port }}application (with a server){{ else }}static pages{{ end }}</dd>
+  {{ with $s.publication }}<dt>Publication</dt><dd>{{ . | markdownify }}</dd>{{ end }}
+  {{ with $s.repository }}<dt>Source</dt><dd><a href="{{ . }}">{{ . }}</a></dd>{{ end }}
+</dl>
+<p><a class="jl-button" href="/{{ $s.path }}/">Open</a></p>
+{{ end }}

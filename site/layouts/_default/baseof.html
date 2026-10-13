@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ if not .IsHome }}{{ .Title }} · {{ end }}{{ site.Title }}</title>
+{{ with .Description }}<meta name="description" content="{{ . }}">{{ end }}
+<link rel="stylesheet" href="/kit/1/jl.css">
+{{ block "head" . }}{{ end }}
+</head>
+<body>
+{{ partial "header.html" . }}
+<main class="jl-main">{{ block "main" . }}{{ end }}</main>
+<footer class="jl-footer">JudaicaLink is developed at <a href="https://www.th-mannheim.de/">Mannheim Technical University</a>.
+  JudaicaLink runs in production in the portal of the <a href="{{ site.Params.production }}">FID Jewish Studies</a>;
+  this site shows work in development. · <a href="{{ site.Params.web }}">web.judaicalink.org</a></footer>
+</body>
+</html>

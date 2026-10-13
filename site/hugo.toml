@@ -1,0 +1,9 @@
+baseURL = "https://mannheim.judaicalink.org/"
+languageCode = "en"
+title = "JudaicaLink Mannheim"
+disableKinds = ["taxonomy", "term", "RSS", "sitemap"]
+
+[params]
+web = "https://web.judaicalink.org/"
+production = "https://www.jewishstudies.de/en/judaicalink/"
+catalogue = "https://web.judaicalink.org/datasets/"

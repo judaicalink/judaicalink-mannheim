@@ -1,0 +1,23 @@
+# The public Fuseki service of mannheim.judaicalink.org: one TDB2 dataset, read-only.
+# Endpoints: /judaicalink/query and /judaicalink/sparql (SPARQL query only; no update, no upload, no admin).
+# The database is built by the loader (load.py) in a separate, writable server; see ../README.md.
+
+PREFIX fuseki: <http://jena.apache.org/fuseki#>
+PREFIX ja:     <http://jena.hpl.hp.com/2005/11/Assembler#>
+PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX tdb2:   <http://jena.apache.org/2016/tdb#>
+
+[] rdf:type fuseki:Server ;
+   # milliseconds: until the first result, and in total
+   ja:context [ ja:cxtName "arq:queryTimeout" ; ja:cxtValue "30000,120000" ] .
+
+<#service> rdf:type fuseki:Service ;
+    fuseki:name "judaicalink" ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "query" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "sparql" ] ;
+    fuseki:dataset <#dataset> .
+
+# Without GRAPH a query sees the union of all graphs (as on QLever).
+<#dataset> rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki/database" ;
+    tdb2:unionDefaultGraph true .
