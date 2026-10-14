@@ -349,7 +349,9 @@ def dataset_page(slug, accept):
         return Response(200, sparql.construct(q, accept=mime), mime + "; charset=utf-8", {"Vary": "Accept"})
     rows = sparql.select(f"SELECT ?s ?p ?o WHERE {{ GRAPH <{d}/meta> {{ ?s ?p ?o }} }}")
     if not rows:
-        return not_found(d)
+        # not a dataset: a version, an activity, an agent, a term of the vocabulary … (datasets/<…>)
+        triples = triples_of(d)
+        return record_page(d, triples) if triples else not_found(d)
     lab = labels([r["p"].value for r in rows])
     subj = {}
     for r in rows:

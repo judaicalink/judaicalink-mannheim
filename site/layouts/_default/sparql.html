@@ -18,11 +18,19 @@ SELECT ?graph (COUNT(*) AS ?triples)
 WHERE { GRAPH ?graph { ?s ?p ?o } }
 GROUP BY ?graph
 ORDER BY DESC(?triples)`;
-  new Yasgui(document.getElementById("yasgui"), {
+  const yasgui = new Yasgui(document.getElementById("yasgui"), {
     requestConfig: { endpoint: location.origin + "/sparql", method: "POST" },
     copyEndpointOnNewTab: true,
     showEndpointButton: false,
     persistenceId: "jl-mannheim"
   });
+  // links with a query: /sparql/#query=…&endpoint=… is read by YASGUI itself; /sparql/?query=… is read here
+  const params = new URLSearchParams(location.search.slice(1));
+  const shared = params.get("query");
+  if (shared) {
+    const tab = yasgui.addTab(true, { name: "Linked query" });
+    tab.setQuery(shared);
+    history.replaceState(null, "", location.pathname);
+  }
 </script>
 {{ end }}

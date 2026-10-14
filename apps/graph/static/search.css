@@ -26,3 +26,8 @@
 mark { background: #fde68a; color: inherit; padding: 0 1px; }
 @media (prefers-color-scheme: dark) { mark { background: #6b5a1e; } }
 @media (max-width: 760px) { .gs-layout { grid-template-columns: 1fr; } .gs-side { order: 2; } }
+.gs-bar { position: relative; }
+.gs-suggest { position: absolute; z-index: 20; top: 100%; left: 0; right: 0; margin: 4px 0 0; padding: 4px 0; list-style: none;
+  background: var(--jl-bg); border: 1px solid var(--jl-line); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.gs-suggest a { display: block; padding: 6px 12px; text-decoration: none; color: var(--jl-fg); }
+.gs-suggest li.gs-act a, .gs-suggest a:hover { background: var(--jl-note); }

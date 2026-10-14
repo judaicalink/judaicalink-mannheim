@@ -169,5 +169,5 @@ def view(qs):
 {form}
 <div class="gs-layout"><aside class="gs-side">{''.join(side)}</aside>
 <section><p class="gs-count">{head}</p><ol class="gs-results">{''.join(out)}</ol>{pager}</section></div>"""
-    return page("Graph search" + (f": {q}" if q else ""), body, head='<link rel="stylesheet" href="/search/static/search.css">',
+    return page("Graph search" + (f": {q}" if q else ""), body, head='<link rel="stylesheet" href="/search/static/search.css">\n<script src="/search/static/search.js" defer></script>',
                 description="Search the JudaicaLink knowledge graph: entity pages and the records of all datasets.")
