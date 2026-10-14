@@ -23,6 +23,7 @@ RESERVED = {"sparql", "dumps", "showcases", "data", "datasets", "ontology", "sea
 STATIC = """location /{path}/ {{
     alias {www}/{path}/;
 }}
+location = /{path} {{ return 301 /{path}/; }}
 """
 SERVER = """location /{path}/ {{
     proxy_pass http://127.0.0.1:{port};
