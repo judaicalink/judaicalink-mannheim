@@ -4,6 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 what=${1:-all}
+docker compose build -q graph       # the code is in the image: build it from this checkout
 run() { docker compose run --rm -T graph python3 jobs.py "$@"; }
 [[ $what == all || $what == stats ]] && run stats
 if [[ $what == all || $what == index ]]; then run index "$(./solr-core.sh graph)"; fi

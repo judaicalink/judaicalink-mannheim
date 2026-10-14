@@ -58,5 +58,5 @@ echo "$(count 3030) triples in the endpoint"
 echo "previous databases:"; ls -d "$DATA"/fuseki/db-* | grep -vx "$new" || true
 
 echo "== the jobs of the graph application: figures, search index, dashboard (apps/graph/jobs.py)"
-docker compose up -d solr graph
+docker compose up -d --build solr graph
 ./jobs.sh
