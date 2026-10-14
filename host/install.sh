@@ -3,6 +3,8 @@
 #   sudo host/install.sh                       (from the checkout of this repository on the VM)
 #   sudo CERTBOT_EMAIL=... host/install.sh     (an address for Let's Encrypt expiry notices; optional)
 #   sudo TLS=self-signed host/install.sh       (a local test VM, host/local-vm.yaml: no Let's Encrypt)
+#   sudo TLS=self-signed TLS_EXTRA=IP:<address> DATA_ON_ROOT=1 host/install.sh
+#                                              (a server not yet reachable by its name; /data on the root volume)
 # What it does: packages, Docker (storage on /data), firewall, directories under /data/mannheim, TLS certificate,
 # nginx. It does not load data or start services: see README.md (services/load.sh, docker compose).
 set -euo pipefail
@@ -14,7 +16,10 @@ TLS=${TLS:-letsencrypt}
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 [ "$(id -u)" = 0 ] || { echo "run with sudo"; exit 1; }
 [ -n "$DEPLOY_USER" ] || { echo "set DEPLOY_USER (the account that deploys)"; exit 1; }
-[ -d /data ] || { echo "/data is missing (the data disk of the VM)"; exit 1; }
+if [ ! -d /data ]; then
+  [ "${DATA_ON_ROOT:-0}" = 1 ] || { echo "/data is missing (the data disk of the VM; DATA_ON_ROOT=1 makes it on the root volume)"; exit 1; }
+  mkdir -p /data
+fi
 
 echo "== packages"
 apt-get update -q
@@ -58,7 +63,7 @@ if [ "$TLS" = self-signed ]; then
   if [ ! -e /etc/nginx/tls-self-signed/fullchain.pem ]; then
     mkdir -p /etc/nginx/tls-self-signed
     openssl req -x509 -newkey rsa:2048 -nodes -days 825 -subj "/CN=$HOST" \
-      -addext "subjectAltName=DNS:$HOST,DNS:localhost,IP:127.0.0.1" \
+      -addext "subjectAltName=DNS:$HOST,DNS:localhost,IP:127.0.0.1${TLS_EXTRA:+,$TLS_EXTRA}" \
       -keyout /etc/nginx/tls-self-signed/privkey.pem -out /etc/nginx/tls-self-signed/fullchain.pem 2>/dev/null
   fi
   ln -sfn /etc/nginx/tls-self-signed /etc/nginx/tls
