@@ -96,14 +96,19 @@ def showcase_links(iris):
     if not shows or not iris:
         return out
     values = " ".join(f"<{i}>" for i in iris[:50])
-    rows = sparql.select(f"SELECT DISTINCT ?i ?g WHERE {{ VALUES ?i {{ {values} }} GRAPH ?g {{ ?i ?p ?o }} }}")
+    # records with a class first: deprecated IRIs (e.g. replaced ones) usually have none
+    rows = sparql.select(f"""SELECT ?i ?g (MAX(?t) AS ?typed) WHERE {{ VALUES ?i {{ {values} }} GRAPH ?g {{ ?i ?p ?o }}
+                             BIND(IF(?p = <{RDF_TYPE}>, 1, 0) AS ?t) }} GROUP BY ?i ?g""")
     present = {}
     for r in rows:
-        present.setdefault(dataset_of_graph(r["g"].value), set()).add(r["i"].value)
+        present.setdefault(dataset_of_graph(r["g"].value), {})[r["i"].value] = int(r["typed"].value)
     for s in shows:
-        hits = set().union(*(present.get(d, set()) for d in s["datasets"]))
+        hits = {}
+        for d in s["datasets"]:
+            for i, typed in present.get(d, {}).items():
+                hits[i] = max(typed, hits.get(i, 0))
         if hits:
-            out.append((s, sorted(hits)[0]))
+            out.append((s, sorted(hits, key=lambda i: (-hits[i], i))[0]))
     return out
 
 
@@ -185,9 +190,10 @@ def entity_page(iri, triples):
     if records:
         body.append(source_records(records))
 
+    # the showcase gets the entity page's IRI and decides itself which of its records to show (decision 0007)
     shows = showcase_links([iri] + records)
     if shows:
-        items = "".join(f'<li><a href="{esc(s["resolve"].format(iri=urllib.parse.quote(hit, safe="")))}">'
+        items = "".join(f'<li><a href="{esc(s["resolve"].format(iri=urllib.parse.quote(iri, safe="")))}">'
                         f'{esc(s["title"])}</a></li>' for s, hit in shows)
         body.append(f'<h2>In the showcases</h2><ul>{items}</ul>')
 
