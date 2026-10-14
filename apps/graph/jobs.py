@@ -2,9 +2,10 @@
 """The jobs of the graph application, run after every load (services/load.sh) or by hand:
 
     python3 jobs.py stats      figures of the loaded graph: status.json, graph-stats.json, ontology-usage.json
-    python3 jobs.py index      the Solr core `graph` for the graph search (built as graph_new, then swapped in)
+    python3 jobs.py index <core>   the Solr core `graph` for the graph search: filled into <core> (made before by
+                                   services/solr-core.sh), then swapped in
     python3 jobs.py dashboard  the graph dashboard (/dashboard/) from the figures
-    python3 jobs.py all        all three
+    python3 jobs.py all        stats and dashboard (the index needs a new core first: services/jobs.sh)
 
 They read the internal SPARQL service (no time limit) and write into JL_GENERATED.
 """
@@ -177,7 +178,7 @@ EXCLUDE = {JL + "Page", JL + "Reference", JL + "CorpusPresence", SCHEMA + "Publi
            HV + "Mention", HV + "Production", HV + "Edition", HV + "Preface", HV + "Translation"}
 
 
-def index():
+def index(new):
     t0 = time.time()
     graphs = [r["g"].value for r in sparql.select("SELECT DISTINCT ?g WHERE { GRAPH ?g { } }")]
     graphs = sorted(g for g in graphs if g.startswith(DS) and not g.endswith("/meta"))
@@ -263,12 +264,12 @@ def index():
         elif s in represented:
             doc["ep"] = represented[s]
         docs.append(doc)
-    log(f"{len(docs):,} documents; writing graph_new")
-    solr.create("graph_new", FIELDS, COPY, FIELD_TYPES)
+    log(f"{len(docs):,} documents; writing {new}")
+    solr.define(new, FIELDS, COPY, FIELD_TYPES)
     for i in range(0, len(docs), 5000):
-        solr.add("graph_new", docs[i:i + 5000])
-    solr.commit("graph_new")
-    solr.swap("graph", "graph_new")
+        solr.add(new, docs[i:i + 5000])
+    solr.commit(new)
+    solr.swap("graph", new)
     log(f"index done in {time.time() - t0:.0f} s: {len(docs):,} documents")
 
 
@@ -281,7 +282,7 @@ if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     if what in ("stats", "all"):
         stats()
-    if what in ("index", "all"):
-        index()
+    if what == "index":
+        index(sys.argv[2])
     if what in ("dashboard", "all"):
         dashboard()

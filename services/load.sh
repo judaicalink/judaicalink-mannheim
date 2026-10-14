@@ -38,4 +38,4 @@ echo "previous databases:"; ls -d "$DATA"/fuseki/db-* | grep -vx "$new" || true
 
 echo "== the jobs of the graph application: figures, search index, dashboard (apps/graph/jobs.py)"
 docker compose up -d solr graph
-docker compose run --rm -T graph python3 jobs.py all
+./jobs.sh

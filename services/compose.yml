@@ -42,8 +42,9 @@ services:
   solr:
     image: solr:9.10.1
     restart: unless-stopped
-    # standalone Solr finds configsets only in its home: copy the one that comes with Solr there before starting
-    command: ["bash", "-c", "init-var-solr && mkdir -p /var/solr/data/configsets && cp -rn /opt/solr/server/solr/configsets/_default /var/solr/data/configsets/ && exec solr-foreground"]
+    # standalone Solr finds configsets only in its home: put a fresh copy of the one that comes with Solr there at
+    # every start (cores are made with `solr create`, which copies it into the core: services/solr-core.sh)
+    command: ["bash", "-c", "init-var-solr && mkdir -p /var/solr/data/configsets && rm -rf /var/solr/data/configsets/_default && cp -r /opt/solr/server/solr/configsets/_default /var/solr/data/configsets/ && exec solr-foreground"]
     environment:
       SOLR_HEAP: "${SOLR_HEAP:-4g}"
     volumes:

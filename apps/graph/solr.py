@@ -1,13 +1,14 @@
 """A small Solr client (standard library) for cores owned by one application.
 
-A core is made from the _default configset over the CoreAdmin API, its fields are defined with the Schema API
-(guessing of new fields switched off), and a rebuild goes into <core>_new, which is then swapped in, so that searches
-never see a half-built index.
+A rebuild goes into a new, uniquely named core, made on the host with `solr create` (services/solr-core.sh), which gives
+the core its own copy of the _default configset (a core made over CoreAdmin with configSet=_default would share and
+change the configset of all such cores). Its fields are defined here with the Schema API (guessing of new fields
+switched off); then it is swapped in under the name the application searches, so that searches never see a
+half-built index (decision 0004).
 """
 
 import json
 import os
-import time
 import urllib.parse
 import urllib.request
 
@@ -28,14 +29,10 @@ def cores():
     return set(_req("admin/cores", params={"action": "STATUS", "wt": "json"})["status"])
 
 
-def create(core, fields, copy_fields=(), field_types=()):
-    """Create the core (dropping an old one of that name) with these fields:
-    fields: [{'name': …, 'type': …, 'multiValued': …, 'stored': …, 'indexed': …, 'docValues': …}]."""
-    if core in cores():
-        _req("admin/cores", params={"action": "UNLOAD", "core": core, "deleteInstanceDir": "true"})
-    # a directory of its own: after a SWAP or RENAME, core names and directory names no longer match
-    _req("admin/cores", params={"action": "CREATE", "name": core, "configSet": "_default",
-                                "instanceDir": f"{core}-{time.strftime('%Y%m%d%H%M%S')}"})
+def define(core, fields, copy_fields=(), field_types=()):
+    """Define the fields of a new core (made by services/solr-core.sh)."""
+    if core not in cores():
+        raise SystemExit(f"Solr core {core} does not exist: make it with services/solr-core.sh first")
     _req(f"{core}/config", {"set-user-property": {"update.autoCreateFields": "false"}})
     existing = {f["name"] for f in _req(f"{core}/schema/fields")["fields"]}
     types = {t["name"] for t in _req(f"{core}/schema/fieldtypes")["fieldTypes"]}
@@ -60,7 +57,7 @@ def commit(core):
 
 
 def swap(core, new):
-    """Make <new> the core <core> (the old content ends up in <new>, which is then dropped)."""
+    """Make <new> the core <core>; the old one (now named <new>) is dropped with its directory."""
     if core in cores():
         _req("admin/cores", params={"action": "SWAP", "core": core, "other": new})
         _req("admin/cores", params={"action": "UNLOAD", "core": new, "deleteInstanceDir": "true"})

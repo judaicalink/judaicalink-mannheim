@@ -12,10 +12,15 @@ repository (it runs outside their Compose setup); their full-text bundle was tes
 
 - One Solr (official image `solr:9.10.1`, standalone, heap `SOLR_HEAP`, data in `/data/mannheim/solr`) in
   `services/compose.yml`, on the Docker network as `http://solr:8983/solr` and on 127.0.0.1:8983; never public.
-- **Each application owns its cores** and makes them itself over the API: CoreAdmin `CREATE` from the `_default`
-  configset, fields with the Schema API, guessing of fields switched off (`update.autoCreateFields=false`). No
-  configset files on the server, nothing to copy by hand. Core names start with the owner (`graph`, `cm_…`).
-- A rebuild goes into `<core>_new` and is swapped in (CoreAdmin `SWAP`), so searches never see a half-built index.
+- **Each application owns its cores.** A core is made with `solr create -c <name> -d _default` inside the Solr
+  container (`services/solr-core.sh` for the platform; showcases do the same from their own scripts), which copies the
+  configset into the core. Fields are then defined with the Schema API, guessing of fields switched off
+  (`update.autoCreateFields=false`). Not over CoreAdmin with `configSet=_default`: in standalone Solr such cores *share*
+  the configset, so one application's fields would end up in every other core (found by the Compact Memory showcase,
+  2026-10-14). Solr puts a fresh copy of `_default` into its home at every start. Core names start with the owner
+  (`graph`, `cm_…`).
+- A rebuild goes into a new, uniquely named core (`graph_<timestamp>`), which is then swapped in under the name the
+  application searches (CoreAdmin `SWAP`, or `RENAME` the first time), so searches never see a half-built index.
 
 ## Consequences
 
