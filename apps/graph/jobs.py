@@ -269,6 +269,7 @@ def index(new):
     for i in range(0, len(docs), 5000):
         solr.add(new, docs[i:i + 5000])
     solr.commit(new)
+    solr.optimize(new)
     solr.swap("graph", new)
     log(f"index done in {time.time() - t0:.0f} s: {len(docs):,} documents")
 

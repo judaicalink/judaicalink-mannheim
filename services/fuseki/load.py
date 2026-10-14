@@ -10,7 +10,9 @@ index of judaicalink-data (catalog/dataindex.json), with the corrections applied
 - Files are downloaded into STORE in the layout <slug>/<version>/<path> (the layout of every dumps location, 0019),
   checked against the sha256 of the index, and not downloaded again. STORE can be served as a dumps location.
 - Loading goes over HTTP (Graph Store Protocol), not with tdb2.tdbloader: the bulk loader of Fuseki 6.2.0 silently
-  wraps integers beyond 64 bits (see endpoints/README.md in the workspace).
+  wraps integers beyond 64 bits (see endpoints/README.md in the workspace). tdb2.tdbcompact has the same fault, so
+  the files are scanned for numbers of 19 or more digits while they are uploaded: load.sh compacts the database only
+  if there are none ("long numbers: 0" in the output).
 - At the end every data graph is compared with the void:triples of its -meta (less the triples deleted by the
   corrections); the exit code is 1 if anything failed or differs.
 
@@ -36,6 +38,10 @@ INDEX = "https://raw.githubusercontent.com/judaicalink/judaicalink-data/main/cat
 DATASETS = "http://data.judaicalink.org/datasets/"
 TYPES = {".ttl": "text/turtle", ".n3": "text/turtle", ".nt": "application/n-triples"}
 AGENT = "judaicalink-mannheim loader (https://web.judaicalink.org/)"
+# a number of 19 or more digits as a value, not inside an IRI or a string: a bare token in Turtle or N-Triples, or a
+# typed literal whose lexical form starts with it ("…"^^<…>); counted by post()
+DIGITS = re.compile(rb"\d{19}")          # the quick test before LONG
+LONG = re.compile(rb"""(?:^|[\s,(\[])[+-]?\d{19,}(?=[\s,;.)\]eE]|$)|["'][+-]?\d{19,}[^"'\s]*["']\^\^""")
 
 
 def http(url, data=None, content_type=None, accept=None):
@@ -102,14 +108,20 @@ def select(fuseki, query):
 
 
 def post(fuseki, local, graph):
-    """Upload one file into a graph; gzipped files are unpacked into a temporary file first."""
+    """Upload one file into a graph; gzipped files are unpacked into a temporary file first. Returns the number of
+    long numbers in it (LONG)."""
+    long = 0
     with tempfile.NamedTemporaryFile(suffix=Path(local.name.removesuffix(".gz")).suffix) as tmp:
         with (gzip.open(local) if local.name.endswith(".gz") else open(local, "rb")) as f:
-            shutil.copyfileobj(f, tmp)
+            for line in f:
+                tmp.write(line)
+                if DIGITS.search(line):
+                    long += len(LONG.findall(line))
         tmp.flush()
         with open(tmp.name, "rb") as body:
             http(f"{fuseki}/data?graph=" + urllib.parse.quote(graph, safe=""), body,
                  rdf_type(local.name)).read()
+    return long
 
 
 def check(fuseki, deletions):
@@ -154,7 +166,7 @@ def main():
             print(f"  {slug} {version}: " + ", ".join(f["path"] for f in files))
         return 0
 
-    failed, ru = [], []
+    failed, ru, long = [], [], 0
     for slug, version, files in todo:
         graph = DATASETS + slug
         print(f"{slug} {version}", flush=True)
@@ -167,7 +179,10 @@ def main():
                     continue
                 target = f"{graph}/meta" if f["path"] == f"{slug}-meta.ttl.gz" else graph
                 print(f"  {f['path']} -> <{target}>", flush=True)
-                post(args.fuseki, local, target)
+                n = post(args.fuseki, local, target)
+                if n:
+                    print(f"  {n:,} numbers of 19 or more digits", flush=True)
+                long += n
         except Exception as e:      # report and go on with the next dataset
             print(f"  FAILED: {e}", flush=True)
             failed.append(slug)
@@ -188,6 +203,7 @@ def main():
             failed.append(str(local.name))
 
     differ = check(args.fuseki, deletions)
+    print(f"long numbers: {long}")      # load.sh compacts the database only if this is 0
     print("done" + (f"; failed: {', '.join(failed)}" if failed else "") + (f"; {differ} graphs differ" if differ else ""))
     return 1 if failed or differ else 0
 

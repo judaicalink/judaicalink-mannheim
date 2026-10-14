@@ -50,10 +50,16 @@ Docker network "judaicalink": fuseki (/judaicalink, /internal), solr ◀── g
 sudo mkdir -p /data/mannheim/src && sudo chown $USER: /data/mannheim/src
 git clone https://github.com/judaicalink/judaicalink-mannheim /data/mannheim/src/judaicalink-mannheim
 cd /data/mannheim/src/judaicalink-mannheim
-sudo host/install.sh                      # then log out and in again (groups docker, fuseki)
+sudo DEPLOY_USER=$USER host/install.sh   # then log out and in again (groups docker, fuseki)
 ```
 
-DNS for mannheim.judaicalink.org must point to the VM before `install.sh` (the certificate is requested on port 80).
+DNS for mannheim.judaicalink.org must point to the VM before `install.sh`, and port 80 must be open from the internet
+(the certificate is requested there); until then `TLS=self-signed TLS_EXTRA=IP:<address>` (see the head of install.sh).
+
+Size: 4 cores, 32 GB RAM (24 GB at least), 100 GB disk. The programs take about 10 GB (heaps in `services/.env`:
+Fuseki 5–8 GB, Solr 3–4 GB); the rest is the file cache for what searches and pages read: the Fuseki database
+(7.5 GB), the Compact Memory core (6.8 GB) and the graph core (0.3 GB), as of 2026-10. With 15 GB the first view of a
+page can take seconds on a slow disk.
 
 ## Data and services
 
@@ -66,6 +72,9 @@ docker compose ps
 `load.sh` builds a new database `/data/mannheim/fuseki/db-<date>` in the `fuseki-load` container (over HTTP; the
 bulk loader of Fuseki 6.2.0 wraps integers beyond 64 bits), applies the corrections, compares every graph with
 the `void:triples` of its `-meta`, and only then points `FUSEKI_DB` in `services/.env` to it and restarts `fuseki`.
+Then it compacts the database (each upload leaves old copies of the changed blocks behind: 14 GB instead of 7.5 GB;
+about 20 minutes on the VM) and compares the triple count again; it skips the compaction when the files have numbers of 19 or more digits,
+because `tdb2.tdbcompact` 6.2.0 wraps integers beyond 64 bits like the bulk loader.
 If anything fails, the endpoint stays as it was. Old databases are removed by hand
 (`sudo rm -rf /data/mannheim/fuseki/db-…`, they belong to the container user).
 
