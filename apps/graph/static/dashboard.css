@@ -1,0 +1,27 @@
+/* graph dashboard (apps/graph/dashboard.py), on top of /kit/1/jl.css */
+.jl-main { max-width: 72rem; }
+.db-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: 12px; margin: 1.2rem 0; }
+.db-tile { border: 1px solid var(--jl-line); border-radius: 8px; padding: 12px 14px; }
+.db-big { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.db-more { font-size: .85rem; }
+.db-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: 8px 32px; }
+.jl-main h3 { font-size: 1.02rem; margin: 1.4rem 0 .5rem; }
+.db-hbars { display: grid; gap: 4px; }
+.db-hbars { grid-template-columns: auto 1fr auto; column-gap: 10px; }
+.db-row { display: contents; font-size: .9rem; }
+.db-row > * { font-size: .9rem; }
+.db-lab { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.db-track { height: 12px; align-self: center; min-width: 3rem; }
+.db-bar { height: 12px; background: var(--jl-chart); border-radius: 0 4px 4px 0; }
+.db-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--jl-muted); }
+.db-svg { width: 100%; height: auto; display: block; }
+.db-col { fill: var(--jl-chart); }
+.db-col:hover { opacity: .8; }
+.db-grid { stroke: var(--jl-line); stroke-width: 1; stroke-dasharray: 2 3; }
+.db-axis { stroke: var(--jl-muted); stroke-width: 1; }
+.db-tick { fill: var(--jl-muted); font-size: 11px; text-anchor: middle; }
+.db-ytick { text-anchor: end; }
+.db-table summary { cursor: pointer; color: var(--jl-muted); font-size: .88rem; }
+.db-prov td.db-dot { text-align: center; color: var(--jl-chart); }
+.db-prov th { font-size: .82rem; }
+.jl-table td:nth-child(3) { white-space: nowrap; }

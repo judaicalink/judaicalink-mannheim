@@ -6,10 +6,11 @@
   --jl-font: system-ui, -apple-system, "Segoe UI", sans-serif;
   --jl-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --jl-width: 56rem;
+  --jl-chart: #3567ad;    /* one-series charts (validated: contrast, lightness band, chroma) */
 }
 @media (prefers-color-scheme: dark) {
   :root { --jl-fg: #e8e8ec; --jl-muted: #a2a2ad; --jl-line: #3a3a42; --jl-bg: #16161a; --jl-accent: #8db4ec;
-          --jl-note: #20242c; --jl-code: #23232a; }
+          --jl-note: #20242c; --jl-code: #23232a; --jl-chart: #5b8fe0; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--jl-bg); color: var(--jl-fg); font: 17px/1.55 var(--jl-font); }
@@ -53,3 +54,16 @@ pre code { background: none; padding: 0; }
 
 .jl-button { display: inline-block; padding: 8px 16px; border-radius: 6px; background: var(--jl-accent); color: var(--jl-bg);
              text-decoration: none; font-weight: 600; }
+
+/* views of IRIs (the platform's resource view) */
+.jl-abstract { margin: 1rem 0; padding: 4px 0 4px 14px; border-left: 3px solid var(--jl-line); color: var(--jl-fg); }
+.jl-alts summary, .jl-long summary, .jl-source summary { cursor: pointer; color: var(--jl-muted); }
+.jl-sources { display: grid; gap: 10px; }
+.jl-source { border: 1px solid var(--jl-line); border-radius: 8px; padding: 10px 14px; }
+.jl-source h3 { margin: 0 0 4px; font-size: 1.02rem; }
+.jl-source p { margin: 2px 0; }
+.jl-ds { display: inline-block; font-size: .78rem; padding: 1px 7px; border: 1px solid var(--jl-line); border-radius: 10px;
+         color: var(--jl-muted); text-decoration: none; margin-right: 3px; }
+.jl-linked { columns: 2 18rem; padding-left: 1.1rem; }
+.jl-formats { margin-top: 2.5rem; }
+a.jl-ext::after { content: " ↗"; font-size: .8em; color: var(--jl-muted); }

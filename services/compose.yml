@@ -37,9 +37,48 @@ services:
     ports:
       - "127.0.0.1:3031:3030"
 
-  # Solr: added when a showcase needs a full-text index (same major version and schema conventions as Frankfurt)
+  # Solr for the platform and the showcases: each owns its cores (created over the API by its indexer, from the
+  # _default configset, fields defined with the Schema API); reachable as http://solr:8983/solr on the network
+  solr:
+    image: solr:9.10.1
+    restart: unless-stopped
+    # standalone Solr finds configsets only in its home: copy the one that comes with Solr there before starting
+    command: ["bash", "-c", "init-var-solr && mkdir -p /var/solr/data/configsets && cp -rn /opt/solr/server/solr/configsets/_default /var/solr/data/configsets/ && exec solr-foreground"]
+    environment:
+      SOLR_HEAP: "${SOLR_HEAP:-4g}"
+    volumes:
+      - type: bind
+        source: ${DATA:-/data/mannheim}/solr
+        target: /var/solr
+        bind: { create_host_path: false }
+    ports:
+      - "127.0.0.1:8983:8983"
+    networks: [judaicalink]
 
-# showcases with a server join this network and reach the endpoint as http://fuseki:3030/judaicalink/query
+  # the platform's application: IRI views (/data/, /datasets/, /ontology/), graph search (/search/); its jobs
+  # (search index, dashboard, figures of the graph) run in the same image: docker compose run --rm graph python3 jobs.py …
+  graph:
+    build: ../apps/graph
+    image: judaicalink/graph:latest
+    restart: unless-stopped
+    environment:
+      JL_SPARQL: http://fuseki:3030/internal/query
+      JL_SOLR: http://solr:8983/solr
+      JL_GENERATED: /generated
+      JL_REGISTRY: /registry/showcases.toml
+    volumes:
+      - ../site/data/showcases.toml:/registry/showcases.toml:ro
+      - type: bind
+        source: ${DATA:-/data/mannheim}/www/generated
+        target: /generated
+        bind: { create_host_path: false }
+    ports:
+      - "127.0.0.1:8090:8090"
+    read_only: true
+    tmpfs: [/tmp]
+    networks: [judaicalink]
+
+# showcases with a server join this network: http://fuseki:3030/internal/query (or /judaicalink/query), http://solr:8983/solr
 networks:
   judaicalink:
     name: judaicalink

@@ -1,20 +1,28 @@
-# The public Fuseki service of mannheim.judaicalink.org: one TDB2 dataset, read-only.
-# Endpoints: /judaicalink/query and /judaicalink/sparql (SPARQL query only; no update, no upload, no admin).
-# The database is built by the loader (load.py) in a separate, writable server; see ../README.md.
+# The Fuseki services of mannheim.judaicalink.org: one TDB2 dataset, read-only, two services on it.
+# - judaicalink: the public one (nginx passes /sparql to /judaicalink/query); queries stop after 120 s.
+# - internal: no time limit, for the platform's own jobs (search index, dashboard, figures of the loaded graph) and for
+#   showcase containers; reachable only on 127.0.0.1 and the Docker network judaicalink, never through nginx.
+# No update, upload or admin endpoints. The database is built by the loader (load.py) in a separate, writable server.
 
 PREFIX fuseki: <http://jena.apache.org/fuseki#>
 PREFIX ja:     <http://jena.hpl.hp.com/2005/11/Assembler#>
 PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX tdb2:   <http://jena.apache.org/2016/tdb#>
 
-[] rdf:type fuseki:Server ;
-   # milliseconds: until the first result, and in total
-   ja:context [ ja:cxtName "arq:queryTimeout" ; ja:cxtValue "30000,120000" ] .
+[] rdf:type fuseki:Server .
 
-<#service> rdf:type fuseki:Service ;
+<#public> rdf:type fuseki:Service ;
     fuseki:name "judaicalink" ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "query" ; ja:context <#timeout> ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "sparql" ; ja:context <#timeout> ] ;
+    fuseki:dataset <#dataset> .
+
+# milliseconds: until the first result, and in total
+<#timeout> ja:cxtName "arq:queryTimeout" ; ja:cxtValue "30000,120000" .
+
+<#internal> rdf:type fuseki:Service ;
+    fuseki:name "internal" ;
     fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "query" ] ;
-    fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "sparql" ] ;
     fuseki:dataset <#dataset> .
 
 # Without GRAPH a query sees the union of all graphs (as on QLever).

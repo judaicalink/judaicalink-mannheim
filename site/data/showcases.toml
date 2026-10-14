@@ -6,8 +6,22 @@
 #   port         only for a showcase with a server: its container listens on 127.0.0.1:<port> (8100-8999)
 #   repository   optional, where its source is
 #   publication  optional, the publication it accompanies (Markdown)
+#   datasets     optional, the JudaicaLink datasets the showcase presents (decision 0007)
+#   resolve      optional, with datasets: URL template with {iri} that opens the showcase's view of an IRI
 
 [[showcase]]
-path = "dashboard"
-title = "Data profile"
-description = "Key figures of the knowledge graph and the Compact Memory full text: datasets, links, provenance, completeness."
+path = "compact-memory"
+title = "Compact Memory"
+description = "The Jewish periodicals of Compact Memory: full-text search over 846,500 pages, and search by the people, places and works they mention, through the knowledge graph."
+port = 8110
+repository = "https://github.com/judaicalink/jlma-compact-memory"
+datasets = ["compact-memory", "cm-tagme", "cm-entities", "cm-ocr-quality"]
+resolve = "/compact-memory/resolve?iri={iri}"
+
+[[showcase]]
+path = "haskala"
+title = "Library of Haskala"
+description = "The books, authors and printers of the Jewish Enlightenment, as collected in the Library of Haskala (2004–2015), with search."
+repository = "https://github.com/judaicalink/jlma-haskala"
+datasets = ["haskala"]
+resolve = "/haskala/resolve/?iri={iri}"

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Build a new Fuseki database from the data index of judaicalink-data, check it, and switch the public endpoint to it.
+# Build a new Fuseki database from the data index of judaicalink-data, check it, switch the endpoint to it, and run
+# the jobs of the graph application (figures of the graph, search index, dashboard).
 #   services/load.sh            (as the deploy user, on the VM)
 # The new database is $DATA/fuseki/db-<date>; the previous one stays until it is removed by hand.
 # Downloaded files stay in $DATA/store (served as /dumps), so a reload downloads only what is new.
@@ -34,3 +35,7 @@ wait_for 3030
 curl -s http://127.0.0.1:3030/judaicalink/query -H 'Accept: text/csv' \
   --data-urlencode 'query=SELECT (COUNT(*) AS ?triples) { GRAPH ?g { ?s ?p ?o } }'
 echo "previous databases:"; ls -d "$DATA"/fuseki/db-* | grep -vx "$new" || true
+
+echo "== the jobs of the graph application: figures, search index, dashboard (apps/graph/jobs.py)"
+docker compose up -d solr graph
+docker compose run --rm -T graph python3 jobs.py all

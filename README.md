@@ -12,8 +12,10 @@ internet ─▶ nginx (host, TLS) ─┬─ /                 static Hugo site (
                                ├─ /<showcase>/      static showcase                   /data/mannheim/www/showcases/<path>
                                │                    or a showcase container           127.0.0.1:<port>
                                ├─ /sparql           Fuseki, read-only                 127.0.0.1:3030 (container)
+                               ├─ /data/ /datasets/ /ontology/ /search/   apps/graph  127.0.0.1:8090 (container)
+                               ├─ /dashboard/ /status.json   made by the jobs         /data/mannheim/www/generated
                                └─ /dumps/           the files of the loaded versions  /data/mannheim/store
-Docker network "judaicalink": fuseki (and later solr) ◀── showcase containers
+Docker network "judaicalink": fuseki (/judaicalink, /internal), solr ◀── graph, showcase containers
 ```
 
 | Path | What |
@@ -22,7 +24,8 @@ Docker network "judaicalink": fuseki (and later solr) ◀── showcase contain
 | `host/deploy.sh` | copies the site (built here) or a static showcase to the VM |
 | `host/local-vm.yaml` | a local test VM (Lima on macOS) set up the same way |
 | `host/nginx/` | the nginx site; `showcases.py` writes the showcase locations from the registry |
-| `services/compose.yml` | the central services: `fuseki` (public, read-only) and `fuseki-load` (only while loading) |
+| `services/compose.yml` | the central services: `fuseki` (read-only; public service and an internal one without time limit), `fuseki-load` (only while loading), `solr` (cores owned by the applications), `graph` (the platform application) |
+| `apps/graph/` | the platform application: views of every JudaicaLink IRI (`/data/`, `/datasets/`, `/ontology/`, HTML or RDF), the graph search (`/search/`), and its jobs (`jobs.py`: figures of the graph, search index, dashboard) |
 | `services/fuseki/` | the Fuseki image (release jar, pinned by checksum), its configuration, the loader `load.py` |
 | `services/load.sh` | builds a new database from the data index, checks it, switches the endpoint |
 | `site/` | the Hugo site; `site/data/showcases.toml` is the registry of the showcases; `static/kit/1/` the shared look |
@@ -56,7 +59,7 @@ DNS for mannheim.judaicalink.org must point to the VM before `install.sh` (the c
 
 ```sh
 cd services
-./load.sh             # about 5 minutes: downloads into /data/mannheim/store, loads, checks, starts the endpoint
+./load.sh             # downloads into /data/mannheim/store, loads, checks, starts the endpoint, runs the jobs
 docker compose ps
 ```
 

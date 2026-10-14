@@ -13,5 +13,12 @@ state of the data.
   corrections applied. Each dataset is a named graph, `http://data.judaicalink.org/datasets/<slug>`; its description
   (VoID, DCAT, PROV) is in `…/<slug>/meta`. A query without `GRAPH` sees all graphs together.
 - **Files:** [/dumps/](/dumps/), the files of the loaded versions in the layout `<slug>/<version>/<path>`.
+- **Every IRI** of JudaicaLink has its view here, at the same path: `http://data.judaicalink.org/data/ep/1007316` is
+  [/data/ep/1007316](/data/ep/1007316), `…/datasets/bhr` is [/datasets/bhr](/datasets/bhr), `…/ontology/birthDate` is
+  [/ontology/birthDate](/ontology/birthDate). Ask for `text/turtle`, `application/n-triples` or
+  `application/ld+json` (or add `.ttl`, `.nt`, `.jsonld`) to get the data. Search engines are pointed to the pages in
+  production (data.judaicalink.org).
+- **Search and figures:** the [graph search](/search/), the [dashboard](/dashboard/), the [datasets](/datasets/) and
+  the [ontology](/ontology/) with the use of each term; `/status.json` says what is loaded.
 - **Catalogue:** the datasets with all their versions, files and sources are described in the
   [catalogue on web.judaicalink.org](https://web.judaicalink.org/datasets/).

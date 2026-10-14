@@ -1,0 +1,28 @@
+/* graph search (apps/graph/search.py), on top of /kit/1/jl.css */
+.gs-bar { display: flex; gap: 8px; margin: 8px 0; }
+.gs-bar input[type=search] { flex: 1; min-width: 0; font: inherit; padding: 9px 12px; border: 1px solid var(--jl-line);
+  border-radius: 6px; background: var(--jl-bg); color: var(--jl-fg); }
+.gs-datasets { margin: 6px 0 14px; }
+.gs-datasets summary { cursor: pointer; color: var(--jl-muted); font-size: .94rem; }
+.gs-dslist { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 2px 14px; margin: 8px 0; }
+.gs-ds { display: block; font-size: .92rem; padding: 2px 0; }
+.gs-all { margin-top: 8px; }
+.gs-layout { display: grid; grid-template-columns: 15rem 1fr; gap: 28px; }
+.gs-side h3 { font-size: .9rem; text-transform: uppercase; letter-spacing: .04em; color: var(--jl-muted); margin: 1rem 0 .3rem; }
+.gs-facet { list-style: none; padding: 0; margin: 0; font-size: .92rem; }
+.gs-facet li a { display: flex; justify-content: space-between; gap: 8px; padding: 2px 6px; border-radius: 4px; text-decoration: none; color: var(--jl-fg); }
+.gs-facet li a:hover { background: var(--jl-note); }
+.gs-facet li.gs-on a { background: var(--jl-note); font-weight: 600; }
+.gs-count { color: var(--jl-muted); margin: 0 0 6px; }
+.gs-results { list-style: none; padding: 0; margin: 0; }
+.gs-results li { padding: 12px 0; border-bottom: 1px solid var(--jl-line); }
+.gs-results h3 { margin: 0; font-size: 1.08rem; }
+.gs-results h3 a { text-decoration: none; }
+.gs-results p { margin: 3px 0; }
+.gs-snippet { font-size: .94rem; }
+.gs-pager { display: flex; gap: 16px; justify-content: center; margin: 18px 0; }
+.jl-ds { display: inline-block; font-size: .78rem; padding: 1px 7px; border: 1px solid var(--jl-line); border-radius: 10px;
+  color: var(--jl-muted); text-decoration: none; margin-right: 3px; }
+mark { background: #fde68a; color: inherit; padding: 0 1px; }
+@media (prefers-color-scheme: dark) { mark { background: #6b5a1e; } }
+@media (max-width: 760px) { .gs-layout { grid-template-columns: 1fr; } .gs-side { order: 2; } }

@@ -6,9 +6,9 @@
 minimumLimaVersion: 2.0.0
 base: template:_images/ubuntu-26.04
 vmType: vz
-cpus: 4
-memory: 12GiB
-disk: 60GiB
+cpus: 6
+memory: 24GiB
+disk: 150GiB
 mounts:
   - location: "~/sync/projekte/judaicalink/judaicalink-mannheim"   # this repository; adjust to your checkout
     writable: false

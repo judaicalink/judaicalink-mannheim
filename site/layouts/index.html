@@ -5,7 +5,17 @@
 <h2>Showcases</h2>
 {{ partial "showcase-cards.html" . }}
 
-<h2>Data</h2>
-<p>The current Mannheim version of the knowledge graph: query it in the <a href="/sparql/">SPARQL editor</a>, or see
-  <a href="/about/data/">what is loaded and where the files are</a>.</p>
+<h2>The knowledge graph</h2>
+<ul class="jl-cards">
+  <li><h3><a href="/search/">Graph search</a></h3><p>People, places, works and subjects: the entity pages, which bring the
+    records of all sources together, or the records of any dataset.</p></li>
+  <li><h3><a href="/dashboard/">Dashboard</a></h3><p>Figures of the graph as loaded here: entity pages, people over
+    time, links to authority files, the datasets and their descriptions.</p></li>
+  <li><h3><a href="/sparql/">SPARQL</a></h3><p>Query the graph: one named graph per dataset, the endpoint for programs
+    at <code>/sparql</code>.</p></li>
+  <li><h3><a href="/datasets/">Datasets</a> · <a href="/ontology/">Ontology</a></h3><p>What is loaded, in which version,
+    described in VoID, DCAT and PROV; the terms of the JudaicaLink ontology and how the graph uses them.</p></li>
+</ul>
+<p class="jl-meta">Every JudaicaLink IRI has its page here: replace <code>http://data.judaicalink.org</code> with
+  <code>https://mannheim.judaicalink.org</code>. Turtle, N-Triples and JSON-LD on request. <a href="/about/data/">About the data</a>.</p>
 {{ end }}

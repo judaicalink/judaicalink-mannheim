@@ -17,8 +17,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 WWW = "/data/mannheim/www/showcases"
 # paths of the platform itself (site sections, nginx locations)
-RESERVED = {"sparql", "dumps", "showcases", "data", "datasets", "ontology", "kit", "about", "css", "js", "img", "fonts",
-            "tags", "categories"}
+RESERVED = {"sparql", "dumps", "showcases", "data", "datasets", "ontology", "search", "dashboard", "kit", "about",
+            "status.json", "css", "js", "img", "fonts", "tags", "categories"}
 
 STATIC = """location /{path}/ {{
     alias {www}/{path}/;
