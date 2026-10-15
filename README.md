@@ -59,7 +59,8 @@ DNS for mannheim.judaicalink.org must point to the VM before `install.sh`, and p
 Size: 4 cores, 32 GB RAM (24 GB at least), 100 GB disk. The programs take about 10 GB (heaps in `services/.env`:
 Fuseki 5–8 GB, Solr 3–4 GB); the rest is the file cache for what searches and pages read: the Fuseki database
 (7.5 GB), the Compact Memory core (6.8 GB) and the graph core (0.3 GB), as of 2026-10. With 15 GB the first view of a
-page can take seconds on a slow disk.
+page can take seconds on a slow disk. After a boot, `mannheim-warm-cache.service` (install.sh) reads the database and the cores
+once, so that they are in the cache (about a minute; `journalctl -u mannheim-warm-cache`).
 
 ## Data and services
 
