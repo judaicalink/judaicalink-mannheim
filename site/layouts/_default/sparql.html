@@ -6,7 +6,8 @@
 <h1>SPARQL</h1>
 <p class="jl-meta">The Mannheim version of the knowledge graph (<a href="/about/data/">what is loaded</a>), one named graph
   per dataset; without <code>GRAPH</code> a query sees all of them. Endpoint for programs:
-  <code>https://mannheim.judaicalink.org/sparql</code>. Queries stop after 120 seconds.</p>
+  <code>https://mannheim.judaicalink.org/sparql</code>. Queries stop after 120 seconds. JudaicaLink IRIs in the results
+  link to their views here.</p>
 <div id="yasgui"></div>
 <script src="/kit/vendor/yasgui-4.6.2/yasgui.min.js"></script>
 <script>
@@ -32,5 +33,15 @@ ORDER BY DESC(?triples)`;
     tab.setQuery(shared);
     history.replaceState(null, "", location.pathname);
   }
+  // results: a link to a JudaicaLink IRI opens its view here (same path, decision 0002); the text stays the IRI.
+  // YASGUI has no option for this, so links are rewritten as the result table adds them (also on paging, new tabs)
+  const JL = /^https?:\/\/data\.judaicalink\.org\//;
+  const rewrite = root => root.querySelectorAll("a.iri").forEach(a => {
+    const iri = a.getAttribute("href");
+    if (JL.test(iri)) { a.href = iri.replace(JL, location.origin + "/"); a.title = iri; }
+  });
+  const box = document.getElementById("yasgui");
+  new MutationObserver(() => rewrite(box)).observe(box, { childList: true, subtree: true });
+  rewrite(box);
 </script>
 {{ end }}
