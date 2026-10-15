@@ -1,0 +1,14 @@
+# Fill the file cache with the Fuseki database and the Solr cores after a boot (host/warm-cache.sh).
+# Installed by host/install.sh, which puts in the path of the checkout (@REPO@).
+[Unit]
+Description=Read the database and search indexes of mannheim.judaicalink.org into the file cache
+After=docker.service local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=@REPO@/host/warm-cache.sh
+Nice=19
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=multi-user.target

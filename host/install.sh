@@ -6,7 +6,7 @@
 #   sudo TLS=self-signed TLS_EXTRA=IP:<address> DATA_ON_ROOT=1 host/install.sh
 #                                              (a server not yet reachable by its name; /data on the root volume)
 # What it does: packages, Docker (storage on /data), firewall, directories under /data/mannheim, TLS certificate,
-# nginx. It does not load data or start services: see README.md (services/load.sh, docker compose).
+# nginx, the cache warm-up at boot. It does not load data or start services: see README.md (services/load.sh, docker compose).
 set -euo pipefail
 
 HOST=mannheim.judaicalink.org
@@ -81,5 +81,10 @@ cp "$REPO/host/nginx/$HOST.conf" /etc/nginx/sites-available/$HOST.conf
 ln -sf /etc/nginx/sites-available/$HOST.conf /etc/nginx/sites-enabled/$HOST.conf
 python3 "$REPO/host/nginx/showcases.py" --out /etc/nginx/mannheim-showcases
 nginx -t && systemctl reload nginx
+
+echo "== cache warm-up at boot (host/warm-cache.sh)"
+sed "s#@REPO@#$REPO#g" "$REPO/host/mannheim-warm-cache.service" > /etc/systemd/system/mannheim-warm-cache.service
+systemctl daemon-reload
+systemctl enable -q mannheim-warm-cache.service
 
 echo "Done. $DEPLOY_USER must log in again for the groups docker and fuseki. Next: README.md, 'Data and services'."
