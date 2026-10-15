@@ -7,6 +7,7 @@
 
 import json
 import os
+import signal
 import sys
 import traceback
 import urllib.parse
@@ -82,5 +83,7 @@ def route(path, qs, accept):
 
 
 if __name__ == "__main__":
+    # as process 1 of a container, Python ignores SIGTERM: docker stop and a shutdown of the VM would wait for SIGKILL
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     print(f"graph app on {HOST}:{PORT}", flush=True)
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
