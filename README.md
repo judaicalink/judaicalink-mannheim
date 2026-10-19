@@ -82,6 +82,8 @@ If anything fails, the endpoint stays as it was. Old databases are removed by ha
 What is loaded is derived from `catalog/dataindex.json` of judaicalink-data: the stable version of every dataset that
 is not replaced, one named graph per dataset, its `-meta` in `<graph>/meta`. Run it again after new versions are
 published. Heap: `FUSEKI_HEAP` in `.env` (default 8g).
+The showcases are not updated by the reload: run their own steps afterwards (Compact Memory: `bin/index.sh` and the
+dashboard job; Library of Haskala: build with the new `ep` and deploy; see their READMEs).
 
 Queries over the whole graph take seconds on Fuseki (counting classes about 13 s, a substring search over all
 labels about 25 s; measured in the workspace, `endpoints/`). Showcases compute such numbers ahead; text search
