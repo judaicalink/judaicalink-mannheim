@@ -2,7 +2,7 @@
 """Load the JudaicaLink knowledge graph into a Fuseki dataset: the stable version of every dataset in the data
 index of judaicalink-data (catalog/dataindex.json), with the corrections applied.
 
-- Datasets that are replaced by another (replaced_by) and datasets without a stable version are left out.
+- Datasets that are replaced by another (replaced_by) or withdrawn, and datasets without a stable version are left out.
 - Every dataset goes into its own named graph, graph IRI = dataset IRI (http://data.judaicalink.org/datasets/<slug>);
   its description <slug>-meta.ttl.gz into <dataset IRI>/meta (decision 0018).
 - Only the RDF files of a version are loaded (.ttl, .nt, .n3, gzipped or not); the deletions of the correction
@@ -67,7 +67,7 @@ def plan(index):
     """(slug, version, files) of every dataset to load; files are the entries of the index."""
     out = []
     for slug, e in sorted(index["datasets"].items()):
-        if e.get("replaced_by") or not e.get("stable"):
+        if e.get("replaced_by") or e.get("withdrawn") or not e.get("stable"):
             continue
         v = next(v for v in e["versions"] if v["version"] == e["stable"])
         files = [f for f in v["files"] if rdf_type(f["path"]) or f["path"].endswith(".ru.gz")]
