@@ -17,16 +17,16 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 EPG = f"<{DS}ep>"
 
 QUERIES = {
-    "ep_classes": f"""SELECT ?class (COUNT(?e) AS ?pages) WHERE {{ GRAPH {EPG} {{ ?e a jl:EntityPage ; a ?class }}
+    "ep_classes": f"""SELECT ?class (COUNT(?e) AS ?pages) WHERE {{ GRAPH {EPG} {{ ?e a ?class }}
         FILTER(?class != jl:EntityPage) }} GROUP BY ?class ORDER BY DESC(?pages)""",
     "ep_history": f"""SELECT ?event (COUNT(DISTINCT ?x) AS ?n) WHERE {{ GRAPH {EPG} {{
-        {{ ?x a jl:EntityPage BIND("in use" AS ?event) }} UNION {{ ?x jl:mergedInto ?t BIND("merged" AS ?event) }}
+        {{ ?x a ?c BIND("in use" AS ?event) }} UNION {{ ?x jl:mergedInto ?t BIND("merged" AS ?event) }}
         UNION {{ ?x jl:splitInto ?t BIND("split" AS ?event) }} UNION {{ ?x jl:retiredDate ?t BIND("retired" AS ?event) }} }} }}
         GROUP BY ?event""",
     "ep_sources": f"""SELECT ?sources (COUNT(?e) AS ?pages) WHERE {{ {{ SELECT ?e (COUNT(?r) AS ?sources)
-        WHERE {{ GRAPH {EPG} {{ ?e jl:represents ?r }} }} GROUP BY ?e }} }} GROUP BY ?sources ORDER BY ?sources""",
+        WHERE {{ GRAPH {EPG} {{ ?e jl:sameAs|jl:represents ?r }} }} GROUP BY ?e }} }} GROUP BY ?sources ORDER BY ?sources""",
     "ep_by_dataset": f"""SELECT ?g (COUNT(DISTINCT ?e) AS ?pages) (COUNT(DISTINCT ?r) AS ?records) WHERE {{
-        GRAPH {EPG} {{ ?e jl:represents ?r }} GRAPH ?g {{ ?r a ?c }} FILTER(?g != {EPG}) }} GROUP BY ?g ORDER BY DESC(?pages)""",
+        GRAPH {EPG} {{ ?e jl:sameAs|jl:represents ?r }} GRAPH ?g {{ ?r a ?c }} FILTER(?g != {EPG}) }} GROUP BY ?g ORDER BY DESC(?pages)""",
     "births": f"""SELECT ?decade (COUNT(?e) AS ?persons) WHERE {{ GRAPH {EPG} {{ ?e a foaf:Person ; jl:birthDateNormalized ?d }}
         BIND(xsd:integer(SUBSTR(STR(?d), 1, 3)) * 10 AS ?decade) FILTER(?decade >= 1000 && ?decade <= 2020) }}
         GROUP BY ?decade ORDER BY ?decade""",

@@ -125,7 +125,7 @@ def entity_page(iri, triples):
     label = (one(SKOS + "prefLabel") or {"value": local(iri)})["value"]
     classes = [o.value for o in props.get(RDF_TYPE, []) if o.value != JL + "EntityPage"]
     lab = labels([o.value for p in (JL + "birthLocationURI", JL + "deathLocationURI", JL + "occupationURI",
-                                    JL + "splitInto", JL + "represents") for o in props.get(p, [])] + classes)
+                                    JL + "splitInto") for o in props.get(p, [])] + classes)
     status, note = 200, ""
     if one(JL + "splitInto"):
         parts = "".join(f"<li>{term_html(o, lab)}</li>" for o in props[JL + "splitInto"])
@@ -186,7 +186,8 @@ def entity_page(iri, triples):
             rows += f"<dt>{esc(k)}</dt><dd>{links}</dd>"
         body.append(f'<h2>Identifiers</h2><dl class="jl-facts">{rows}</dl>')
 
-    records = [o.value for o in props.get(JL + "represents", [])]
+    # its records: jl:sameAs since ep 2026-10-19, jl:represents before (judaicalink-data decision 0029)
+    records = list(dict.fromkeys(o.value for p in (JL + "sameAs", JL + "represents") for o in props.get(p, [])))
     if records:
         body.append(source_records(records))
 
@@ -214,7 +215,7 @@ def source_records(records):
     """The records an entity page represents, with the facts each source gives."""
     values = " ".join(f"<{r}>" for r in records)
     rows = sparql.select(f"""SELECT ?r ?g ?p ?o WHERE {{ VALUES ?r {{ {values} }} GRAPH ?g {{ ?r ?p ?o }}
-                             FILTER(?p != <{OWL}sameAs>) }}""")
+                             FILTER(?p NOT IN (<{OWL}sameAs>, <{JL}sameAs>)) }}""")
     by = {}
     for r in rows:
         by.setdefault(r["r"].value, []).append((r["g"].value, r["p"].value, r["o"]))
@@ -255,7 +256,7 @@ def record_page(iri, triples):
             break
     label = label or iri[len(DATA):]
     classes = sorted({o.value for _, p, o in triples if p == RDF_TYPE})
-    eps = sparql.select(f"SELECT ?ep WHERE {{ GRAPH <{DS}ep> {{ ?ep <{JL}represents> <{iri}> }} }}")
+    eps = sparql.select(f"SELECT ?ep WHERE {{ GRAPH <{DS}ep> {{ ?ep <{JL}sameAs>|<{JL}represents> <{iri}> }} }}")
     body = [f'<p class="jl-meta"><a href="/search/?ds=all">Graph search</a> · record</p>',
             f'<h1 dir="auto">{esc(label)}</h1>',
             f'<p class="jl-lead">{", ".join(term_html(sparql.Term(type="uri", value=c), lab) for c in classes) or "Resource"}'

@@ -116,7 +116,8 @@ OCC = [JL + "occupationURI", JL + "occupation", GNDO + "professionOrOccupation"]
 TEXT = [JL + "hasAbstract", DCT + "description", RDFS + "comment", SKOS + "scopeNote", GNDO + "biographicalOrHistoricalInformation"]
 STATUS = {JL + "mergedInto": "merged", JL + "splitInto": "split", JL + "retiredDate": "retired"}
 LABELSET = set(LABEL)
-PROPS = LABEL + ALT + BIRTH + DEATH + BPLACE + OCC + TEXT + [RDF_TYPE, JL + "represents"] + list(STATUS)
+REPS = [JL + "sameAs", JL + "represents"]   # the records of an entity page (jl:represents before ep 2026-10-19, decision 0029)
+PROPS = LABEL + ALT + BIRTH + DEATH + BPLACE + OCC + TEXT + [RDF_TYPE] + list(STATUS)
 
 FIELD_TYPES = [{
     "name": "text_folded", "class": "solr.TextField", "positionIncrementGap": "100",
@@ -189,9 +190,9 @@ def index(new):
             if c in EXCLUDE:
                 skip.add(s)
     log(f"{len(skip):,} subjects left out (pages, mentions, issues …)")
-    values = " ".join(f"<{p}>" for p in PROPS)
-    for g in graphs:   # pass 2: the values
+    for g in graphs:   # pass 2: the values (the records of a page only from ep: jl:sameAs is also in the linksets)
         slug = dataset_of_graph(g)
+        values = " ".join(f"<{p}>" for p in PROPS + (REPS if slug == "ep" else []))
         n = 0
         q = f"SELECT ?s ?p ?o WHERE {{ VALUES ?p {{ {values} }} GRAPH <{g}> {{ ?s ?p ?o }} FILTER(!ISBLANK(?s)) }}"
         for s, p, o in sparql.select_tsv(q):
@@ -219,7 +220,7 @@ def index(new):
 
     represented = {}
     for s, r in recs.items():
-        for rec in r.get(JL + "represents", []):
+        for rec in (v for p in REPS for v in r.get(p, [])):
             represented[rec] = s
     # the label of a place IRI may only be known through its entity page (geonames ids): fall back to it
     docs = []
@@ -244,7 +245,7 @@ def index(new):
         doc = {"id": s, "pref": labels[0], "pref_sort": labels[0].lower()[:200], "label": list(dict.fromkeys(labels))[:30],
                "alt": list(dict.fromkeys(v for p in ALT for v in r.get(p, [])))[:60],
                "dataset": sorted(r["ds"]), "classes": classes, "class": kind_of(classes),
-               "sources": len(r.get(JL + "represents", [])) if is_ep else 1}
+               "sources": len({v for p in REPS for v in r.get(p, [])}) if is_ep else 1}
         if text:
             doc["abstract"] = text[0][:2000]
             doc["text"] = [t[:4000] for t in text[:5]]
