@@ -55,7 +55,7 @@ chown -R "$DEPLOY_USER": "$DATA"/www "$DATA"/store "$DATA"/src
 chown 9030:fuseki "$DATA"/fuseki && chmod 2775 "$DATA"/fuseki    # new databases: made by the deploy user, written by Fuseki
 mkdir -p "$DATA"/solr "$DATA"/www/generated "$DATA"/showcases
 chown 8983:8983 "$DATA"/solr                                       # the user of the official Solr image
-chown 9090:9090 "$DATA"/www/generated                              # the graph application and its jobs (apps/graph)
+chown -R 9090:9090 "$DATA"/www/generated                           # the graph application and its jobs (apps/graph); after the chown -R of www
 chown "$DEPLOY_USER": "$DATA"/showcases                            # data of the showcases, one folder each
 
 echo "== TLS certificate ($TLS), linked as /etc/nginx/tls"
