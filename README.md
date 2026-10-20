@@ -118,7 +118,8 @@ limactl start --name=mannheim --set '.vmType="qemu" | .memory="20GiB"
   | .portForwards[0].hostPort=8080 | .portForwards[1].hostPort=8443' host/local-vm.yaml
 ```
 
-Then https://localhost:8443 on that machine (from another one: `ssh -L 8443:localhost:8443 <host>`).
+Then https://localhost:8443 on that machine (from another one: `ssh -L 8443:localhost:8443 <host>`). The VM runs
+only while a deployment is prepared: `limactl stop mannheim` afterwards (Lima does not start it at boot).
 
 ## The platform bar and the kit
 
