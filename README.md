@@ -109,6 +109,17 @@ host/deploy.sh lima-mannheim site
 
 Then https://localhost (accept the certificate). `limactl stop mannheim` / `limactl delete mannheim`.
 
+On Linux (Lima from the release tarball, QEMU from the distribution, e.g. `qemu-base` on Arch), the same file with
+QEMU, the path of the checkout and host ports a user may open; the other steps are the same:
+
+```sh
+limactl start --name=mannheim --set '.vmType="qemu" | .memory="20GiB"
+  | .mounts[0].location="~/judaicalink/judaicalink-mannheim"
+  | .portForwards[0].hostPort=8080 | .portForwards[1].hostPort=8443' host/local-vm.yaml
+```
+
+Then https://localhost:8443 on that machine (from another one: `ssh -L 8443:localhost:8443 <host>`).
+
 ## The platform bar and the kit
 
 nginx puts the platform bar into every HTML page that contains the line
