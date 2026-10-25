@@ -25,3 +25,10 @@ description = "The books, authors and printers of the Jewish Enlightenment, as c
 repository = "https://github.com/judaicalink/jlma-haskala"
 datasets = ["haskala"]
 resolve = "/haskala/resolve/?iri={iri}"
+
+[[showcase]]
+path = "atlas"
+title = "Atlas"
+description = "The people, organisations and publications of JudaicaLink on a map, filtered by time and area, with the family, friendship, professional and other connections between them."
+repository = "https://github.com/judaicalink/jlma-atlas"
+resolve = "/atlas/?iri={iri}"
