@@ -12,13 +12,24 @@ SKOS = PREFIXES["skos"]
 OWL = PREFIXES["owl"]
 EP = DATA + "data/ep/"
 
-# the facts of an entity page, in this order (property, heading)
+DCT = "http://purl.org/dc/terms/"
+GNDO = "https://d-nb.info/standards/elementset/gnd#"
+# the facts of an entity page, in this order (property, heading); each class has its own (judaicalink-data 0038), a
+# page shows those it has
 EP_FACTS = [
     (JL + "birthDateNormalized", "Born"), (JL + "birthDate", "Born (as recorded)"),
     (JL + "birthLocationURI", "Place of birth"), (JL + "birthLocation", "Place of birth (as recorded)"),
     (JL + "deathDateNormalized", "Died"), (JL + "deathDate", "Died (as recorded)"),
     (JL + "deathLocationURI", "Place of death"), (JL + "deathLocation", "Place of death (as recorded)"),
     (JL + "occupationURI", "Occupation"), (JL + "occupation", "Occupation (as recorded)"),
+    (DCT + "creator", "Creator"),
+    (JL + "issuedNormalized", "Published"), (DCT + "issued", "Published (as recorded)"),
+    (JL + "placeOfPublicationURI", "Place of publication"), (JL + "placeOfPublication", "Place of publication (as recorded)"),
+    (DCT + "publisher", "Publisher"), (DCT + "language", "Language"),
+    (JL + "establishmentDateNormalized", "Founded"), (GNDO + "dateOfEstablishment", "Founded (as recorded)"),
+    (JL + "terminationDateNormalized", "Dissolved"), (GNDO + "dateOfTermination", "Dissolved (as recorded)"),
+    (GNDO + "placeOfBusiness", "Seat"),
+    (SKOS + "broader", "Broader subject"),
 ]
 AUTHORITIES = [("d-nb.info/gnd/", "GND"), ("viaf.org/", "VIAF"), ("wikidata.org/", "Wikidata"),
                ("dbpedia.org/", "DBpedia"), ("geonames.org/", "GeoNames"), ("id.loc.gov/", "Library of Congress"),
