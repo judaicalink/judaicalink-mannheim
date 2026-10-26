@@ -127,6 +127,9 @@ nginx puts the platform bar into every HTML page that contains the line
 `<!--# include virtual="/kit/1/header.html" -->` (server-side includes, SSI): no JavaScript, no delay, and search
 engines see the links. The bar is built by Hugo from `site/layouts/partials/header.html` and the registry, so a new
 showcase appears in every bar with the next site build. Outside the platform the line is an HTML comment.
+The bar has a **Feedback** button (decision 0008): `/kit/1/feedback.js` opens a panel that prepares an issue in
+judaicalink-data from the resource of the page and the text the visitor selects; showcases can mark elements with
+`data-jl-iri` to name the resource of their content.
 `/kit/1/jl.css` is the common look (colours, type, components) for showcases that want it. Kit 1 only gets
 compatible changes; a breaking change becomes `/kit/2/`.
 

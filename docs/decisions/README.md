@@ -12,3 +12,4 @@ generation, dumps, entity pages) are in [judaicalink-data](https://github.com/ju
 | [0005](0005-graph-search.md) | Graph search: entity pages by default, other datasets by choice or all, facets (kind, occupation, place of birth, century) | 2026-10-14 |
 | [0006](0006-graph-dashboard.md) | The graph dashboard is part of the platform (`/dashboard/`); Compact Memory has its own in its showcase | 2026-10-14 |
 | [0007](0007-showcase-contract.md) | The showcase contract: registry fields `datasets` and `resolve`, a data folder per showcase, services, reserved paths | 2026-10-14 |
+| [0008](0008-feedback.md) | Feedback on the data: a button in the platform bar opens a panel (explanation, selected text, resource of the page) that prepares an issue in judaicalink-data or gives the text to copy | 2026-10-26 |
