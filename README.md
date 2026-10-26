@@ -91,7 +91,18 @@ belongs in Solr.
 
 ## Deploying new data from bee (decision 0009)
 
-The reload runs on the test VM on bee, which is then copied to mannheim:
+The reload runs on the test VM on bee, which is then copied to mannheim. The repositories on bee are synced from the
+working copies (rsync); into the VM they are copied by rsync over ssh, not through its read-only mount of bee's
+checkout, which can show stale files:
+
+```sh
+rsync -a --delete --exclude services/.env -e "ssh -F ~/.lima/mannheim/ssh.config" \
+  ~/judaicalink/judaicalink-mannheim/ lima-mannheim:/data/mannheim/src/judaicalink-mannheim/      # on bee; the same
+                                                                     # for the showcases with a server
+```
+
+Once, for Compact Memory: its `.env` (`CM_UID`, `CM_GID` as on mannheim) and its private full-text bundle, pulled from
+mannheim into `/data/mannheim/showcases/compact-memory/inputs/` (with the agent forwarded into the VM).
 
 ```sh
 ssh -A bee                                    # the agent goes along; no key is stored on bee
