@@ -51,7 +51,7 @@ echo "database $db: $triples triples"
 
 echo "== the store, the database, the generated pages"
 copy_owned "$DATA/store" "$DATA/store"
-remote "mkdir -p $db" && copy_owned "$db" "$db"
+copy_owned "$db" "$db"            # rsync makes the directory; a dry run changes nothing on the target
 [ -f "$db.log" ] && copy --no-owner --no-group "$db.log" "$target:$db.log"
 copy_owned "$DATA/www/generated" "$DATA/www/generated"
 if [ -n "$dry" ]; then
