@@ -21,8 +21,11 @@ db=${FUSEKI_DB:?FUSEKI_DB is not set in services/.env}
 SSH="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
 remote() { $SSH "$target" "$@"; }
 # rsync as root on both sides (the files belong to container users), deleting what the source lacks; the agent of the
-# deploy user goes along (sudo -E keeps SSH_AUTH_SOCK)
-copy() { sudo -E rsync -aHS --delete --info=stats1 ${dry:+--dry-run} -e "$SSH" --rsync-path="sudo rsync" "$@"; }
+# deploy user goes along (sudo env: sudo-rs of Ubuntu 26.04 ignores sudo -E)
+copy() {
+  sudo env SSH_AUTH_SOCK="${SSH_AUTH_SOCK:?no ssh agent: connect with ssh -A}" \
+    rsync -aHS --delete --info=stats1 ${dry:+--dry-run} -e "$SSH" --rsync-path="sudo rsync" "$@"
+}
 # a directory whose files keep the owner the target directory has (user ids differ between the VMs)
 copy_owned() {
   local src=$1 dst=$2 owner

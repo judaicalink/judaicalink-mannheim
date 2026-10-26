@@ -96,7 +96,7 @@ The reload runs on the test VM on bee, which is then copied to mannheim:
 ```sh
 ssh -A bee                                    # the agent goes along; no key is stored on bee
 limactl start mannheim                        # the test VM (see below), with this repository at the same commit
-ssh -A -F ~/.lima/mannheim/ssh.config lima-mannheim
+ssh -A -o ControlPath=none -F ~/.lima/mannheim/ssh.config lima-mannheim   # not Lima's shared connection: it has no agent
 cd /data/mannheim/src/judaicalink-mannheim
 services/load.sh                              # load, check, switch, jobs
 # the jobs of the showcases with a server (Compact Memory: bin/index.sh, the dashboard job, the check)
