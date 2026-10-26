@@ -14,11 +14,14 @@ bee, in the university network, runs the test VM and reaches mannheim at about 1
 - New data is loaded, indexed and checked on the test VM on bee (the same steps as before: `services/load.sh`, the
   jobs of the showcases with a server, the checks).
 - `host/copy-state.sh <target>`, run on that VM, copies its state to mannheim: the database the endpoint uses, the
-  Solr home with all cores, the generated pages (figures, dashboard, `status.json`), the store (`/dumps`) and the data
+  Solr home with all cores, the generated pages (figures, dashboard, `status.json`), the store (`/dumps`, only added to) and the data
   of the showcases (`/data/mannheim/showcases`). It requires the same commits of this repository and of the showcase
   repositories on both VMs; it stops Solr, the graph application and the showcase containers on the target while their
   files are replaced, switches the endpoint to the copied database, and accepts the copy when the target counts the
-  same triples. `--dry-run` shows what would be copied.
+  same triples. `--dry-run` shows what would be copied. The database the target's endpoint uses is never written:
+  if the copy has its name (both built on the same day), it goes to the next free name (`-2`, …). The store is only
+  added to, so that `/dumps` keeps the files of earlier versions; the database, Solr and the generated pages mirror the
+  source.
 - Files keep the owner the target directory has (user ids differ between the VMs), except Solr's, which belong to the
   container user with the same id everywhere.
 - The static showcases and the site are copied as before with `host/deploy.sh`. `load.sh` on mannheim stays possible

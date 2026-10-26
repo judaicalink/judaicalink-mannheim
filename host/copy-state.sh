@@ -20,11 +20,12 @@ DATA=${DATA:-/data/mannheim}
 db=${FUSEKI_DB:?FUSEKI_DB is not set in services/.env}
 SSH="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
 remote() { $SSH "$target" "$@"; }
-# rsync as root on both sides (the files belong to container users), deleting what the source lacks; the agent of the
-# deploy user goes along (sudo env: sudo-rs of Ubuntu 26.04 ignores sudo -E)
+# rsync as root on both sides (the files belong to container users); the agent of the deploy user goes along (sudo
+# env: sudo-rs of Ubuntu 26.04 ignores sudo -E). DELETE=--delete mirrors the source (the default); the store is only
+# added to, so that /dumps keeps the files of earlier versions.
 copy() {
   sudo env SSH_AUTH_SOCK="${SSH_AUTH_SOCK:?no ssh agent: connect with ssh -A}" \
-    rsync -aHS --delete --info=stats1 ${dry:+--dry-run} -e "$SSH" --rsync-path="sudo rsync" "$@"
+    rsync -aHS ${DELETE---delete} --info=stats1 ${dry:+--dry-run} -e "$SSH" --rsync-path="sudo rsync" "$@"
 }
 # a directory whose files keep the owner the target directory has (user ids differ between the VMs)
 copy_owned() {
@@ -49,10 +50,17 @@ done
 triples=$(count)
 echo "database $db: $triples triples"
 
-echo "== the store, the database, the generated pages"
-copy_owned "$DATA/store" "$DATA/store"
-copy_owned "$db" "$db"            # rsync makes the directory; a dry run changes nothing on the target
-[ -f "$db.log" ] && copy --no-owner --no-group "$db.log" "$target:$db.log"
+# the database on the target: the name of this one, unless that is the database the target's endpoint uses (never
+# written while it serves): then the next free name, -2, -3 …, as load.sh names them
+active=$(remote "grep -oP '^FUSEKI_DB=\K.*' $DATA/src/judaicalink-mannheim/services/.env" || true)
+dest=$db; n=1
+while [ "$dest" = "$active" ]; do n=$((n + 1)); dest=$db-$n; done
+echo "on the target: $dest (its endpoint uses ${active:-none})"
+
+echo "== the store (added to), the database, the generated pages"
+DELETE= copy_owned "$DATA/store" "$DATA/store"
+copy_owned "$db" "$dest"          # rsync makes the directory; a dry run changes nothing on the target
+[ -f "$db.log" ] && copy --no-owner --no-group "$db.log" "$target:$dest.log"
 copy_owned "$DATA/www/generated" "$DATA/www/generated"
 if [ -n "$dry" ]; then
   echo "dry run: Solr and the showcase data are copied with the services stopped, not compared here"; exit 0
@@ -64,9 +72,9 @@ for d in "${showcases[@]}"; do remote "cd $DATA/src/$d && docker compose stop"; 
 copy --numeric-ids "$DATA/solr/" "$target:$DATA/solr/"          # owned by the Solr container user, the same id
 for d in "$DATA"/showcases/*/; do copy_owned "${d%/}" "$DATA/showcases/$(basename "$d")"; done
 
-echo "== switching the target to $db, starting the services"
-remote "cd $DATA/src/judaicalink-mannheim/services && sed -i 's#^FUSEKI_DB=.*#FUSEKI_DB=$db#' .env &&
-  FUSEKI_DB=$db docker compose up -d fuseki solr graph"
+echo "== switching the target to $dest, starting the services"
+remote "cd $DATA/src/judaicalink-mannheim/services && sed -i 's#^FUSEKI_DB=.*#FUSEKI_DB=$dest#' .env &&
+  FUSEKI_DB=$dest docker compose up -d fuseki solr graph"
 for d in "${showcases[@]}"; do remote "cd $DATA/src/$d && docker compose up -d"; done
 there=""
 for _ in $(seq 120); do
@@ -76,4 +84,4 @@ for _ in $(seq 120); do
 done
 echo "target: ${there:-no answer} triples (here $triples)"
 [ "$there" = "$triples" ] || { echo "the counts differ: check the target before anything else"; exit 1; }
-echo "previous databases on the target (remove by hand):"; remote "ls -d $DATA/fuseki/db-* | grep -vx $db" || true
+echo "previous databases on the target (remove by hand):"; remote "ls -d $DATA/fuseki/db-* | grep -v '\.log$' | grep -vx $dest" || true
