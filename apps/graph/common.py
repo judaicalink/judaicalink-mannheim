@@ -86,6 +86,18 @@ def labels(iris, extra_graph=None):
         for r in rows:
             found.setdefault(r["s"].value, []).append((order.get(r["p"].value, 99), r["l"].lang, r["l"].value))
         out.update({s: best_label(t) for s, t in found.items()})
+    # an external identifier (a GND or GeoNames IRI) has no label of its own: the label of our record of it
+    rest = [i for i in iris if i not in out]
+    for start in range(0, len(rest), 200):
+        chunk = rest[start:start + 200]
+        values = " ".join(f"<{i}>" for i in chunk)
+        props = " ".join(f"<{p}>" for p in LABEL_PROPS)
+        rows = sparql.select(f"SELECT ?s ?p ?l WHERE {{ VALUES ?s {{ {values} }} VALUES ?p {{ {props} }} "
+                             f"?r <http://www.w3.org/2002/07/owl#sameAs> ?s . ?r ?p ?l }}")
+        found = {}
+        for r in rows:
+            found.setdefault(r["s"].value, []).append((order.get(r["p"].value, 99), r["l"].lang, r["l"].value))
+        out.update({s: best_label(t) for s, t in found.items()})
     return out
 
 
