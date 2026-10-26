@@ -32,3 +32,10 @@ title = "Atlas"
 description = "The people, organisations and publications of JudaicaLink on a map, filtered by time and area, with the family, friendship, professional and other connections between them."
 repository = "https://github.com/judaicalink/jlma-atlas"
 resolve = "/atlas/?iri={iri}"
+
+[[showcase]]
+path = "footprints"
+title = "Footprints"
+description = "Where Jewish books were printed and where their copies went: owners, sellers, censors and libraries on a map through time, from the data of Footprints: Jewish Books Through Time and Place."
+datasets = ["footprints"]
+resolve = "/footprints/?iri={iri}"
