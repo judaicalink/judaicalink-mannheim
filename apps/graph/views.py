@@ -135,8 +135,8 @@ def entity_page(iri, triples):
         return Response(301, "", headers={"Location": href(one(JL + "mergedInto").value)})
     label = (one(SKOS + "prefLabel") or {"value": local(iri)})["value"]
     classes = [o.value for o in props.get(RDF_TYPE, []) if o.value != JL + "EntityPage"]
-    lab = labels([o.value for p in (JL + "birthLocationURI", JL + "deathLocationURI", JL + "occupationURI",
-                                    JL + "splitInto") for o in props.get(p, [])] + classes)
+    lab = labels([o.value for p in [p for p, _h in EP_FACTS] + [JL + "splitInto"]
+                  for o in props.get(p, []) if o.is_iri][:400] + classes)
     status, note = 200, ""
     if one(JL + "splitInto"):
         parts = "".join(f"<li>{term_html(o, lab)}</li>" for o in props[JL + "splitInto"])
