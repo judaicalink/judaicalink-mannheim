@@ -37,5 +37,6 @@ resolve = "/atlas/?iri={iri}"
 path = "footprints"
 title = "Footprints"
 description = "Where Jewish books were printed and where their copies went: owners, sellers, censors and libraries on a map through time, from the data of Footprints: Jewish Books Through Time and Place."
+repository = "https://github.com/judaicalink/jlma-footprints"
 datasets = ["footprints"]
 resolve = "/footprints/?iri={iri}"
