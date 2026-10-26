@@ -13,3 +13,4 @@ generation, dumps, entity pages) are in [judaicalink-data](https://github.com/ju
 | [0006](0006-graph-dashboard.md) | The graph dashboard is part of the platform (`/dashboard/`); Compact Memory has its own in its showcase | 2026-10-14 |
 | [0007](0007-showcase-contract.md) | The showcase contract: registry fields `datasets` and `resolve`, a data folder per showcase, services, reserved paths | 2026-10-14 |
 | [0008](0008-feedback.md) | Feedback on the data: a button in the platform bar opens a panel (explanation, selected text, resource of the page) that prepares an issue in judaicalink-data or gives the text to copy | 2026-10-26 |
+| [0009](0009-prepare-on-bee-copy-state.md) | New data is loaded and checked on the test VM on bee; `host/copy-state.sh` copies the state (database, Solr, generated pages, store, showcase data) to mannheim | 2026-10-26 |

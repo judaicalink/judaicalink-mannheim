@@ -89,6 +89,23 @@ Queries over the whole graph take seconds on Fuseki (counting classes about 13 s
 labels about 25 s; measured in the workspace, `endpoints/`). Showcases compute such numbers ahead; text search
 belongs in Solr.
 
+## Deploying new data from bee (decision 0009)
+
+The reload runs on the test VM on bee, which is then copied to mannheim:
+
+```sh
+ssh -A bee                                    # the agent goes along; no key is stored on bee
+limactl start mannheim                        # the test VM (see below), with this repository at the same commit
+ssh -A -F ~/.lima/mannheim/ssh.config lima-mannheim
+cd /data/mannheim/src/judaicalink-mannheim
+services/load.sh                              # load, check, switch, jobs
+# the jobs of the showcases with a server (Compact Memory: bin/index.sh, the dashboard job, the check)
+host/copy-state.sh eckert@141.19.143.18 --dry-run
+host/copy-state.sh eckert@141.19.143.18      # database, Solr, generated pages, store, showcase data
+```
+
+Then the static showcases and the site with `host/deploy.sh`, as for any change, and `limactl stop mannheim`.
+
 ## The site
 
 Built here and copied, like web.judaicalink.org: `host/deploy.sh <ssh-host> site`.
