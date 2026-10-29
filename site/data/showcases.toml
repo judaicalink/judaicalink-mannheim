@@ -40,3 +40,9 @@ description = "Where Jewish books were printed and where their copies went: owne
 repository = "https://github.com/judaicalink/jlma-footprints"
 datasets = ["footprints"]
 resolve = "/footprints/?iri={iri}"
+
+[[showcase]]
+path = "occupations"
+title = "Occupations"
+description = "The occupations of the GND as an ICE-Map: a treemap of the hierarchy, coloured by how often each occupation occurs among the persons of JudaicaLink, compared to the structure alone and to the whole GND."
+repository = "https://github.com/judaicalink/jlma-occupations"
