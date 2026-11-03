@@ -23,7 +23,7 @@ Docker network "judaicalink": fuseki (/judaicalink, /internal), solr ◀── g
 | `host/install.sh` | sets up a fresh Ubuntu VM (24.04 or 26.04 LTS): packages, Docker (storage on `/data/docker`), firewall, directories, TLS, nginx |
 | `host/deploy.sh` | copies the site (built here) or a static showcase to the VM |
 | `host/local-vm.yaml` | a local test VM (Lima on macOS) set up the same way |
-| `host/nginx/` | the nginx site; `showcases.py` writes the showcase locations from the registry |
+| `host/nginx/` | the nginx site; `showcases.py` writes the showcase locations from the registry; `haskala-library.net.conf` redirects the former domain of the Library of Haskala (decision 0010) |
 | `services/compose.yml` | the central services: `fuseki` (read-only; public service and an internal one without time limit), `fuseki-load` (only while loading), `solr` (cores owned by the applications), `graph` (the platform application) |
 | `apps/graph/` | the platform application: views of every JudaicaLink IRI (`/data/`, `/datasets/`, `/ontology/`, HTML or RDF), the graph search (`/search/`), and its jobs (`jobs.py`: figures of the graph, search index, dashboard) |
 | `services/fuseki/` | the Fuseki image (release jar, pinned by checksum), its configuration, the loader `load.py` |
@@ -53,8 +53,8 @@ cd /data/mannheim/src/judaicalink-mannheim
 sudo DEPLOY_USER=$USER host/install.sh   # then log out and in again (groups docker, fuseki)
 ```
 
-DNS for mannheim.judaicalink.org must point to the VM before `install.sh`, and port 80 must be open from the internet
-(the certificate is requested there); until then `TLS=self-signed TLS_EXTRA=IP:<address>` (see the head of install.sh).
+DNS for mannheim.judaicalink.org, haskala-library.net and www.haskala-library.net must point to the VM before `install.sh`, and port 80 must be open from the internet
+(the certificates are requested there); until then `TLS=self-signed TLS_EXTRA=IP:<address>` (see the head of install.sh).
 
 Size: 4 cores, 32 GB RAM (24 GB at least), 100 GB disk. The programs take about 10 GB (heaps in `services/.env`:
 Fuseki 5–8 GB, Solr 3–4 GB); the rest is the file cache for what searches and pages read: the Fuseki database

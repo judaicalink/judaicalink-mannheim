@@ -5,7 +5,7 @@
 #   sudo TLS=self-signed host/install.sh       (a local test VM, host/local-vm.yaml: no Let's Encrypt)
 #   sudo TLS=self-signed TLS_EXTRA=IP:<address> DATA_ON_ROOT=1 host/install.sh
 #                                              (a server not yet reachable by its name; /data on the root volume)
-# What it does: packages, Docker (storage on /data), firewall, directories under /data/mannheim, TLS certificate,
+# What it does: packages, Docker (storage on /data), firewall, directories under /data/mannheim, TLS certificates,
 # nginx, the cache warm-up at boot. It does not load data or start services: see README.md (services/load.sh, docker compose).
 set -euo pipefail
 
@@ -58,27 +58,36 @@ chown 8983:8983 "$DATA"/solr                                       # the user of
 chown -R 9090:9090 "$DATA"/www/generated                           # the graph application and its jobs (apps/graph); after the chown -R of www
 chown "$DEPLOY_USER": "$DATA"/showcases                            # data of the showcases, one folder each
 
-echo "== TLS certificate ($TLS), linked as /etc/nginx/tls"
-if [ "$TLS" = self-signed ]; then
-  if [ ! -e /etc/nginx/tls-self-signed/fullchain.pem ]; then
-    mkdir -p /etc/nginx/tls-self-signed
-    openssl req -x509 -newkey rsa:2048 -nodes -days 825 -subj "/CN=$HOST" \
-      -addext "subjectAltName=DNS:$HOST,DNS:localhost,IP:127.0.0.1${TLS_EXTRA:+,$TLS_EXTRA}" \
-      -keyout /etc/nginx/tls-self-signed/privkey.pem -out /etc/nginx/tls-self-signed/fullchain.pem 2>/dev/null
+echo "== TLS certificates ($TLS), linked as /etc/nginx/tls (this host) and /etc/nginx/tls-haskala-library.net"
+# certificate <link> <self-signed directory> <domain>...: the first domain names the certificate
+certificate() {
+  local link=$1 dir=$2; shift 2
+  if [ "$TLS" = self-signed ]; then
+    if [ ! -e "$dir/fullchain.pem" ]; then
+      mkdir -p "$dir"
+      openssl req -x509 -newkey rsa:2048 -nodes -days 825 -subj "/CN=$1" \
+        -addext "subjectAltName=$(printf 'DNS:%s,' "$@")DNS:localhost,IP:127.0.0.1${TLS_EXTRA:+,$TLS_EXTRA}" \
+        -keyout "$dir/privkey.pem" -out "$dir/fullchain.pem" 2>/dev/null
+    fi
+    ln -sfn "$dir" "$link"
+  else
+    if [ ! -e "/etc/letsencrypt/live/$1/fullchain.pem" ]; then
+      if [ -n "${CERTBOT_EMAIL:-}" ]; then contact=(-m "$CERTBOT_EMAIL"); else contact=(--register-unsafely-without-email); fi
+      certbot certonly --nginx --cert-name "$1" $(printf -- '-d %s ' "$@") --agree-tos -n "${contact[@]}"
+    fi
+    ln -sfn "/etc/letsencrypt/live/$1" "$link"
   fi
-  ln -sfn /etc/nginx/tls-self-signed /etc/nginx/tls
-else
-  if [ ! -e /etc/letsencrypt/live/$HOST/fullchain.pem ]; then
-    if [ -n "${CERTBOT_EMAIL:-}" ]; then contact=(-m "$CERTBOT_EMAIL"); else contact=(--register-unsafely-without-email); fi
-    certbot certonly --nginx -d "$HOST" --agree-tos -n "${contact[@]}"
-  fi
-  ln -sfn /etc/letsencrypt/live/$HOST /etc/nginx/tls
-fi
+}
+certificate /etc/nginx/tls /etc/nginx/tls-self-signed "$HOST"
+# the former domain of the Library of Haskala, redirected to the showcase (decision 0010)
+certificate /etc/nginx/tls-haskala-library.net /etc/nginx/tls-self-signed-haskala-library.net haskala-library.net www.haskala-library.net
 
-echo "== nginx (this site is the default server; Ubuntu's default site is removed)"
+echo "== nginx (this site is the default server; Ubuntu's default site is removed; haskala-library.net redirects)"
 rm -f /etc/nginx/sites-enabled/default
-cp "$REPO/host/nginx/$HOST.conf" /etc/nginx/sites-available/$HOST.conf
-ln -sf /etc/nginx/sites-available/$HOST.conf /etc/nginx/sites-enabled/$HOST.conf
+for site in "$HOST" haskala-library.net; do
+  cp "$REPO/host/nginx/$site.conf" /etc/nginx/sites-available/$site.conf
+  ln -sf /etc/nginx/sites-available/$site.conf /etc/nginx/sites-enabled/$site.conf
+done
 python3 "$REPO/host/nginx/showcases.py" --out /etc/nginx/mannheim-showcases
 nginx -t && systemctl reload nginx
 
