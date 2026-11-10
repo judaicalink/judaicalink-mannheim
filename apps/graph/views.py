@@ -31,6 +31,12 @@ EP_FACTS = [
     (GNDO + "placeOfBusiness", "Seat"),
     (SKOS + "broader", "Broader subject"),
 ]
+# the fact row of a page that a conflict of its records is about (judaicalink-data decision 0045, dataset conflicts)
+CONFLICT_ROWS = {JL + "birthDate": (JL + "birthDateNormalized", JL + "birthDate"),
+                 JL + "deathDate": (JL + "deathDateNormalized", JL + "deathDate"),
+                 JL + "birthLocationURI": (JL + "birthLocationURI", JL + "birthLocation"),
+                 JL + "deathLocationURI": (JL + "deathLocationURI", JL + "deathLocation")}
+OA = "http://www.w3.org/ns/oa#"
 AUTHORITIES = [("d-nb.info/gnd/", "GND"), ("viaf.org/", "VIAF"), ("wikidata.org/", "Wikidata"),
                ("dbpedia.org/", "DBpedia"), ("geonames.org/", "GeoNames"), ("id.loc.gov/", "Library of Congress"),
                ("nli.org.il", "National Library of Israel"), ("deutsche-biographie.de/", "Deutsche Biographie"),
@@ -165,6 +171,14 @@ def entity_page(iri, triples):
         body.append(f'<details class="jl-alts"><summary>Also known as ({len(alts)} names)</summary>'
                     f'<dl class="jl-facts">{rows}</dl></details>')
 
+    # its records: jl:sameAs since ep 2026-10-19, jl:represents before (judaicalink-data decision 0029)
+    records = list(dict.fromkeys(o.value for p in (JL + "sameAs", JL + "represents") for o in props.get(p, [])))
+    conflicts = conflicts_of(records)
+    differ = set()
+    for prop, _text in conflicts:
+        row = next((r for r in CONFLICT_ROWS.get(prop, ()) if props.get(r)), None)
+        if row:
+            differ.add(row)
     facts = []
     shown = set()
     for p, head in EP_FACTS:
@@ -173,9 +187,15 @@ def entity_page(iri, triples):
         shown.update(v.value for v in vals)
         shown.update(lab.get(v.value, "") for v in vals if v.is_iri)
         if vals:
-            facts.append(f'<dt>{esc(head)}</dt><dd>{" · ".join(term_html(v, lab) for v in vals)}</dd>')
+            mark = ' <a class="jl-differ" href="#conflicts">sources differ</a>' if p in differ else ""
+            facts.append(f'<dt>{esc(head)}</dt><dd>{" · ".join(term_html(v, lab) for v in vals)}{mark}</dd>')
     if facts:
         body.append(f'<dl class="jl-facts">{"".join(facts)}</dl>')
+    if conflicts:
+        items = "".join(f"<li>{esc(text)}</li>" for _prop, text in conflicts)
+        body.append(f'<div class="jl-note" id="conflicts"><strong>The sources differ.</strong> The page shows the value '
+                    f'of the source that comes first; the others state:<ul>{items}</ul>'
+                    f'<span class="jl-meta">From the dataset <a href="/datasets/conflicts">conflicts</a>.</span></div>')
     for a in props.get(JL + "hasAbstract", []):
         body.append(f'<blockquote class="jl-abstract" dir="auto">{esc(a.value)}</blockquote>')
 
@@ -197,8 +217,6 @@ def entity_page(iri, triples):
             rows += f"<dt>{esc(k)}</dt><dd>{links}</dd>"
         body.append(f'<h2>Identifiers</h2><dl class="jl-facts">{rows}</dl>')
 
-    # its records: jl:sameAs since ep 2026-10-19, jl:represents before (judaicalink-data decision 0029)
-    records = list(dict.fromkeys(o.value for p in (JL + "sameAs", JL + "represents") for o in props.get(p, [])))
     if records:
         body.append(source_records(records))
 
@@ -220,6 +238,18 @@ def entity_page(iri, triples):
     canonical = FRANKFURT + iri[len(DATA):]
     return Response(status, page(label, "\n".join(body), canonical=canonical, alternates=alternates(iri),
                                  description=f"{label}: JudaicaLink entity page"))
+
+
+def conflicts_of(records):
+    """[(property, text)]: the conflicts of these records (dataset conflicts, judaicalink-data decision 0045)."""
+    if not records:
+        return []
+    values = " ".join(f"<{r}>" for r in records[:200])
+    rows = sparql.select(f"""SELECT DISTINCT ?a ?prop ?text WHERE {{ VALUES ?r {{ {values} }}
+                             GRAPH <{DS}conflicts> {{ ?a <{OA}hasTarget> ?r ; <{JL}onProperty> ?prop ;
+                             <{OA}bodyValue> ?text }} }}""")
+    order = {p: i for i, p in enumerate(CONFLICT_ROWS)}
+    return sorted({(r["prop"].value, r["text"].value) for r in rows}, key=lambda x: (order.get(x[0], 99), x[1]))
 
 
 def source_records(records):
