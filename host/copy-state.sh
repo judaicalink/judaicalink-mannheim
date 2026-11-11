@@ -60,7 +60,9 @@ echo "on the target: $dest (its endpoint uses ${active:-none})"
 
 # enough space for the database (it is not compacted when its files have long numbers: about 26 GB)
 need=$(sudo du -sk "$db" | cut -f1)
-have=$(remote "echo \$(( \$(df -k --output=avail $DATA | tail -1) + \$(sudo du -sk $dest 2>/dev/null | cut -f1 || echo 0) ))")
+free=$(remote "df -k --output=avail $DATA | tail -1" | tr -d ' ')
+part=$(remote "sudo du -sk $dest 2>/dev/null | cut -f1")   # a copy aborted before is continued
+have=$(( free + ${part:-0} ))
 if [ "$need" -gt "$have" ]; then
   echo "not enough space on the target: the database needs $((need / 1048576)) GB, $((have / 1048576)) GB free;"
   echo "remove a database the endpoint does not use (sudo rm -rf $DATA/fuseki/db-…), then run this again"
