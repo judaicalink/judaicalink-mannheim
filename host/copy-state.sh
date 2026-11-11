@@ -27,10 +27,11 @@ copy() {
   sudo env SSH_AUTH_SOCK="${SSH_AUTH_SOCK:?no ssh agent: connect with ssh -A}" \
     rsync -aHS ${DELETE---delete} --info=stats1 ${dry:+--dry-run} -e "$SSH" --rsync-path="sudo rsync" "$@"
 }
-# a directory whose files keep the owner the target directory has (user ids differ between the VMs)
+# a directory whose files keep the owner the target directory has (user ids differ between the VMs); ref: where to
+# take the owner from instead (a database copied once and aborted belongs to root, as rsync runs as root)
 copy_owned() {
-  local src=$1 dst=$2 owner
-  owner=$(remote "stat -c %u:%g $dst 2>/dev/null || stat -c %u:%g $(dirname "$dst")")
+  local src=$1 dst=$2 ref=${3:-$2} owner
+  owner=$(remote "stat -c %u:%g $ref 2>/dev/null || stat -c %u:%g $(dirname "$dst")")
   copy --no-owner --no-group "$src/" "$target:$dst/"
   [ -n "$dry" ] || remote "sudo chown -R $owner $dst"
 }
@@ -57,9 +58,19 @@ dest=$db; n=1
 while [ "$dest" = "$active" ]; do n=$((n + 1)); dest=$db-$n; done
 echo "on the target: $dest (its endpoint uses ${active:-none})"
 
+# enough space for the database (it is not compacted when its files have long numbers: about 26 GB)
+need=$(sudo du -sk "$db" | cut -f1)
+have=$(remote "echo \$(( \$(df -k --output=avail $DATA | tail -1) + \$(sudo du -sk $dest 2>/dev/null | cut -f1 || echo 0) ))")
+if [ "$need" -gt "$have" ]; then
+  echo "not enough space on the target: the database needs $((need / 1048576)) GB, $((have / 1048576)) GB free;"
+  echo "remove a database the endpoint does not use (sudo rm -rf $DATA/fuseki/db-…), then run this again"
+  remote "ls -d $DATA/fuseki/db-* | grep -v '\.log$'"
+  exit 1
+fi
+
 echo "== the store (added to), the database, the generated pages"
 DELETE= copy_owned "$DATA/store" "$DATA/store"
-copy_owned "$db" "$dest"          # rsync makes the directory; a dry run changes nothing on the target
+copy_owned "$db" "$dest" "${active:-$dest}"   # the owner of the database in use; a dry run changes nothing
 [ -f "$db.log" ] && copy --no-owner --no-group "$db.log" "$target:$dest.log"
 copy_owned "$DATA/www/generated" "$DATA/www/generated"
 if [ -n "$dry" ]; then
